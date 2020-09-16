@@ -1,13 +1,15 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow
+from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
-import Costants
+import Constants
 import Admin_backend
 import Home_window
+import Register_window
 class Ui_MainWindow(object):
     names_list=[]
+    Readed_registers=[]
 
     def quit(self):
         sys.exit(app.exec())
@@ -36,7 +38,7 @@ class Ui_MainWindow(object):
         self.pushButton_4.setObjectName("pushButton_4")
 
         self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_5.setGeometry(QtCore.QRect(450, 50, 50, 25))
+        self.pushButton_5.setGeometry(QtCore.QRect(500, 55, 50, 25))
         self.pushButton_5.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
@@ -46,7 +48,11 @@ class Ui_MainWindow(object):
         self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_8.setGeometry(QtCore.QRect(360, 290, 50, 25))
         self.pushButton_8.setObjectName("pushButton_7")
-
+        
+        self.pushButton_9 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_9.setGeometry(QtCore.QRect(500, 5, 120, 25))
+        self.pushButton_9.setObjectName("pushButton_7")
+        
         self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
         self.coordination_box_x.setGeometry(QtCore.QRect(50, 290, 100, 25))
 
@@ -74,11 +80,11 @@ class Ui_MainWindow(object):
 
 
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(50, 25, 331, 25))
+        self.label.setGeometry(QtCore.QRect(50, 5, 331, 25))
         self.label.setObjectName("label")
 
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(125, 25, 361,25))
+        self.label_2.setGeometry(QtCore.QRect(125, 5, 361,25))
         self.label_2.setObjectName("label_2")
         # Date
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
@@ -90,15 +96,15 @@ class Ui_MainWindow(object):
         self.label_4.setObjectName("label_3")
 
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
-        self.label_5.setGeometry(QtCore.QRect(200, 260, 100, 25))
+        self.label_5.setGeometry(QtCore.QRect(250, 260, 100, 25))
         self.label_5.setObjectName("label_3")
 
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
-        self.label_6.setGeometry(QtCore.QRect(325, 5, 70, 25))
+        self.label_6.setGeometry(QtCore.QRect(375, 5, 70, 25))
         self.label_6.setObjectName("label_3")
 
         self.label_7 = QtWidgets.QLabel(self.centralwidget)
-        self.label_7.setGeometry(QtCore.QRect(200, 25, 70, 25))
+        self.label_7.setGeometry(QtCore.QRect(250, 5, 100, 25))
         self.label_7.setObjectName("label_3")
 
         self.label_8 = QtWidgets.QLabel(self.centralwidget)
@@ -118,19 +124,25 @@ class Ui_MainWindow(object):
         self.coordination_box_y.setGeometry(QtCore.QRect(200, 290, 100, 25))
 
         self.Message_edit = QtWidgets.QTextEdit(self.centralwidget)
-        self.Message_edit.setGeometry(QtCore.QRect(325, 55, 100, 25))
+        self.Message_edit.setGeometry(QtCore.QRect(375, 55, 100, 25))
+        
+        self.Message_edit2 = QtWidgets.QTextEdit(self.centralwidget)
+        self.Message_edit2.setGeometry(QtCore.QRect(125, 55, 100, 25))
+        
+        self.Message_edit3 = QtWidgets.QTextEdit(self.centralwidget)
+        self.Message_edit3.setGeometry(QtCore.QRect(250, 55, 100, 25))
 
         self.unit_choice = QtWidgets.QComboBox(self.centralwidget)
-        self.unit_choice.setGeometry(QtCore.QRect(50, 50, 50, 25))
+        self.unit_choice.setGeometry(QtCore.QRect(50, 25, 50, 25))
 
         self.function_choice = QtWidgets.QComboBox(self.centralwidget)
-        self.function_choice.setGeometry(QtCore.QRect(123, 50, 50, 25))
+        self.function_choice.setGeometry(QtCore.QRect(125, 25, 100, 25))
 
         self.register_choice = QtWidgets.QComboBox(self.centralwidget)
-        self.register_choice.setGeometry(QtCore.QRect(200, 50, 100, 25))
+        self.register_choice.setGeometry(QtCore.QRect(250, 25, 100, 25))
 
         self.message_choice = QtWidgets.QComboBox(self.centralwidget)
-        self.message_choice.setGeometry(QtCore.QRect(325, 25, 100, 25))
+        self.message_choice.setGeometry(QtCore.QRect(375, 25, 100, 25))
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -142,23 +154,26 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.DigitalClock = DigitalClock(self.centralwidget)
-
         self.DigitalClock.setGeometry(QtCore.QRect(570, 553, 130, 21))
-
-
-        self.retranslateUi(MainWindow)
+        self.retranslateUi(MainWindow) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def send_message(self):
         function_choosed=self.function_choice.currentText()
         Admin_backend.message_sending.Register=self.register_choice.currentText()
-        Admin_backend.message_sending.Unit=self.unit_choice.currentText()
-        Admin_backend.message_sending.count_r='1'       
+        Admin_backend.message_sending.Unit=self.unit_choice.currentText()  
         Admin_backend.message_sending.message=self.Message_edit.toPlainText()
         if(function_choosed=='read'):
             Admin_backend.message_sending.read_register()
         else:
             Admin_backend.message_sending.write_register()
+        if(Admin_backend.error_flag!=0):
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)
+            self.msgbox.setText("sending/reading error")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+        
         
         
     def getDate(self):
@@ -171,7 +186,7 @@ class Ui_MainWindow(object):
         names_list=Admin_backend.comboboxes.registers_names()
         self.register_choice.addItems(names_list)
         Admin_backend.registers_names_list=[]
-
+        self.Message_edit2.setText(value)
     def name_selected(self, value):
         self.message_choice.clear()
         Admin_backend.register_name_value=value
@@ -181,7 +196,7 @@ class Ui_MainWindow(object):
         if(Admin_backend.label_text!=[]):
             self.label_8.setText(Admin_backend.label_text[0])
             Admin_backend.label_text=[]
-            
+        self.Message_edit3.setText(value)    
     def message_selected(self, value):
         Admin_backend.message_name_value = value
         print(Admin_backend.label_text)
@@ -189,13 +204,21 @@ class Ui_MainWindow(object):
         if(Admin_backend.label_text!=[]):
             self.label_8.setText(Admin_backend.label_text[0])
             Admin_backend.label_text=[]
-            
+        value=self.message_choice.currentText()
+        print(value)
+        if value!='inc' and value!='RPM' and value!='AMP' and value!='number' and value!='rp/s^2':
+            self.Message_edit.setText(value)	
     def Home_window(self):
         self.window = QMainWindow()
         self.Home_ui = Home_window.Ui_Home_Window()
         self.Home_ui.setupUi(self.window)
         self.window.show()
 
+    def Register_window(self):
+        self.window = QMainWindow()
+        self.Register_ui = Register_window.Ui_Register_Window()
+        self.Register_ui.setupUi(self.window)
+        self.window.show()
 
 
     def retranslateUi(self, MainWindow):
@@ -210,9 +233,11 @@ class Ui_MainWindow(object):
         self.pushButton_5.clicked.connect(self.send_message)
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
         self.pushButton_8.setText(_translate("MainWindow", "move"))
-        self.unit_choice.addItems(Costants.units)
+        self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
+        self.pushButton_9.clicked.connect(self.Register_window)
+        self.unit_choice.addItems(Constants.units)
         self.function_choice.currentTextChanged.connect(self.Function_selected)
-        self.function_choice.addItems(Costants.function_select)
+        self.function_choice.addItems(Constants.function_select)
         self.register_choice.currentTextChanged.connect(self.name_selected)
         self.message_choice.currentTextChanged.connect(self.message_selected)
         self.label.setText(_translate("MainWindow", "Unit:"))
@@ -225,7 +250,7 @@ class Ui_MainWindow(object):
         self.label_9.setText(_translate("MainWindow", "Register Name:"))
         self.label_10.setText(_translate("MainWindow", "Register Name:"))
         self.DigitalClock.setStyleSheet('background-color: black',)
-
+        self.Register_window()
 
 
 if __name__ == "__main__":
