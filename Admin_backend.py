@@ -14,6 +14,7 @@ message_name_value=''
 message_names_list= []
 label_text=[]
 error_flag=Interpretation.message_send_allowance
+Register_respond=[]
 
 class message_sending:
     Defaults.RetryOnEmpty = True
@@ -26,6 +27,7 @@ class message_sending:
 
     
     def check_connection():
+
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
@@ -33,6 +35,9 @@ class message_sending:
         fun = Adress_cursor.fetchall()
         Register_adress = ''
         Register_class = ''
+        Interpretation.Status_registers=[]
+        Interpretation.Status_registers_status=[]
+         
         client = modbusclient(method='rtu', port="/dev/ttyUSB0", timeout=1, stopbits=1, bytesize=8, parity='N', baudrate=19200)
         print(str(client))
         connectResult = client.connect()
@@ -57,7 +62,8 @@ class message_sending:
          
                 
     def read_register():
-
+        Interpretation.Status_registers=[]
+        Interpretation.Status_registers_status=[]
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
@@ -65,20 +71,29 @@ class message_sending:
         fun = Adress_cursor.fetchall()
         Register_adress = ''
         Register_class = ''
-        for adr in fun:
-            if (message_sending.Register == adr['name']):
-                Register_adress=adr['adress']
-                Register_class=adr['class']
-                print(Register_adress,Register_class)
+        Register_name_temp=''
+        if(Interpretation.message_read_allowance==0):
+            for adr in fun:
+                if (message_sending.Register == adr['name']):
+                    Register_adress=adr['adress']
+                    Register_class=adr['class']
+                    Register_name_temp=adr['name']
+                    print(Register_adress,Register_class)
+                    count_r=adr['count']
+            client=modbusclient(method='RTU',port='/dev/ttyUSB0',timeout=1,stopbits=1,bytesize=8,parity='N',baudrate=19200)
+            connectResult=client.connect()
+            try:
+                hh = client.read_holding_registers(address=int(Register_adress,16),count=int(count_r), unit=1)
+                assert (hh.function_code < 0x80)
                 
-        client=modbusclient(method='RTU',port='/dev/ttyUSB0',timeout=1,stopbits=1,bytesize=8,parity='N',baudrate=19200)
-        connectResult=client.connect()
-        try:
-            hh = client.read_holding_registers(address=int(Register_adress,16),count=count_r, unit=Unit)
-            assert (hh.function_code < 0x80)
-            print(str(hh))
-        except:
-            print("error")
+                Interpretation.Status_registers_message=['']
+                Interpretation.Status_registers.append([Register_name_temp])
+                Interpretation.Status_registers_status.append([hh.registers])
+         
+            except:
+                print("error")
+            Interpretation.interpretation.interpretcheck()
+            Register_respond.append(str(Register_name_temp+':'+Interpretation.Status_registers_message[0]))
         client.close()
 
         
@@ -93,10 +108,12 @@ class message_sending:
         Register_class = ''
         for adr in fun:
             if (message_sending.Register == adr['name']):
+                Interpretation.Status_register_send = adr['name']
                 Register_adress=adr['adress']
                 Register_class=adr['class']
                 count_r=adr['count']
                 print(Register_adress,Register_class)
+        Interpretation.Status_register_send_message=message_sending.message
         Interpretation.interpretation.interpretsend()
         if(Interpretation.message_send_allowance == 0):
             Interpretation.message_send_allowance=1
@@ -155,11 +172,13 @@ class comboboxes:
             Adress_database = sqlite3.connect('Adress.db')
             Adress_database.row_factory = sqlite3.Row
             Adress_cursor = Adress_database.cursor()
+            Interpretation.Allowed_messages_list=[]
             Adress_cursor.execute(""" SELECT name,function,description  FROM functions """)
             fun = Adress_cursor.fetchall()
             for functions in fun:
                 if(register_name_value==functions['name']):
                     message_names_list.append(functions['function'])
+
 
 
         return message_names_list
@@ -171,9 +190,10 @@ class comboboxes:
             Adress_cursor.execute(""" SELECT name,function,description  FROM functions """)
             fun = Adress_cursor.fetchall()
             for functions in fun:
-                if(message_name_value==functions['function']):
-                    print(functions['description'])
-                    label_text.append(functions['description'])
+                if(register_name_value==functions['name']):
+                    if(message_name_value==functions['function']):
+                        print(functions['description'])
+                        label_text.append(functions['description'])
 
 
 

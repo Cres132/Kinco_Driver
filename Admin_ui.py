@@ -1,5 +1,5 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox
+from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
@@ -10,7 +10,7 @@ import Register_window
 class Ui_MainWindow(object):
     names_list=[]
     Readed_registers=[]
-
+    Responded_messages_list=[]
     def quit(self):
         sys.exit(app.exec())
 
@@ -65,6 +65,7 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 100, 699, 99))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.scrollArea2 = QtWidgets.QScrollArea(self.centralwidget)
@@ -143,7 +144,9 @@ class Ui_MainWindow(object):
 
         self.message_choice = QtWidgets.QComboBox(self.centralwidget)
         self.message_choice.setGeometry(QtCore.QRect(375, 25, 100, 25))
-
+        
+        self.responded_messages = QWidget()
+        self.vbox = QVBoxLayout()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
@@ -163,16 +166,23 @@ class Ui_MainWindow(object):
         Admin_backend.message_sending.Register=self.register_choice.currentText()
         Admin_backend.message_sending.Unit=self.unit_choice.currentText()  
         Admin_backend.message_sending.message=self.Message_edit.toPlainText()
-        if(function_choosed=='read'):
+        print(function_choosed)
+        if(function_choosed=='read'):			
             Admin_backend.message_sending.read_register()
-        else:
+            self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
+            object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
+            self.vbox.addWidget(object)	
+            self.responded_messages.setLayout(self.vbox)			
+            self.scrollArea.setWidget(self.responded_messages)
+            Admin_backend.Register_respond=[]
+        elif(function_choosed=='write'):
             Admin_backend.message_sending.write_register()
-        if(Admin_backend.error_flag!=0):
-            self.msgbox = QMessageBox()
-            self.msgbox.setIcon(QMessageBox.Critical)
-            self.msgbox.setText("sending/reading error")
-            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            self.msgbox.show()
+            if(Admin_backend.error_flag!=0):
+                self.msgbox = QMessageBox()
+                self.msgbox.setIcon(QMessageBox.Critical)
+                self.msgbox.setText("sending/reading error")
+                self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+                self.msgbox.show()
         
         
         
@@ -187,6 +197,7 @@ class Ui_MainWindow(object):
         self.register_choice.addItems(names_list)
         Admin_backend.registers_names_list=[]
         self.Message_edit2.setText(value)
+   
     def name_selected(self, value):
         self.message_choice.clear()
         Admin_backend.register_name_value=value
@@ -197,6 +208,7 @@ class Ui_MainWindow(object):
             self.label_8.setText(Admin_backend.label_text[0])
             Admin_backend.label_text=[]
         self.Message_edit3.setText(value)    
+   
     def message_selected(self, value):
         Admin_backend.message_name_value = value
         print(Admin_backend.label_text)
@@ -208,6 +220,7 @@ class Ui_MainWindow(object):
         print(value)
         if value!='inc' and value!='RPM' and value!='AMP' and value!='number' and value!='rp/s^2':
             self.Message_edit.setText(value)	
+ 
     def Home_window(self):
         self.window = QMainWindow()
         self.Home_ui = Home_window.Ui_Home_Window()
@@ -247,7 +260,7 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "Y Coordinate:"))
         self.label_6.setText(_translate("MainWindow", "Message:"))
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
-        self.label_9.setText(_translate("MainWindow", "Register Name:"))
+        self.label_9.setText(_translate("MainWindow", " "))
         self.label_10.setText(_translate("MainWindow", "Register Name:"))
         self.DigitalClock.setStyleSheet('background-color: black',)
         self.Register_window()
