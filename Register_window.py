@@ -141,8 +141,6 @@ class Ui_Register_Window(object):
            Register_status.append("")
         if(Register_count<1):
             Register_count=(Register_count+1)*20
-            print(Register_status)
-            print(Register_name)
             self.label.setText(str(Register_name[Register_count+0][0]+':'+Register_status[Register_count+0]))
             self.label_2.setText(str(Register_name[Register_count+1][0]+':'+Register_status[Register_count+1]))
             self.label_3.setText(str(Register_name[Register_count+2][0]+':'+Register_status[Register_count+2]))
@@ -164,7 +162,6 @@ class Ui_Register_Window(object):
             self.label_19.setText(str(Register_name[Register_count+18][0]+':'+Register_status[Register_count+18]))
             self.label_20.setText(str(Register_name[Register_count+19][0]+':'+Register_status[Register_count+19]))
             self.Register_count=int(Register_count/20)
-            print(Register_count)
             
     def prev_registers(self, MainWindow):
         Register_count=self.Register_count
@@ -203,7 +200,6 @@ class Ui_Register_Window(object):
        while(len(self.Register_name)<60):
            Register_name.append([""])
            Register_status.append("")    
-       print(Interpretation.Status_registers_message)
        iter_temp=0
        _translate = QtCore.QCoreApplication.translate
        MainWindow.setWindowTitle(_translate("MainWindow", "Registers"))
@@ -231,7 +227,6 @@ class Ui_Register_Window(object):
        self.pushButton.clicked.connect(self.next_registers)
        self.pushButton2.setText(_translate("MainWindow", "prev"))
        self.pushButton2.clicked.connect(self.prev_registers)
-       print(self.Register_name)
 
        
 if __name__ == "__main__":

@@ -22,19 +22,19 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(60, 451, 81, 61))
+        self.pushButton.setGeometry(QtCore.QRect(50, 450, 100, 60))
         self.pushButton.setObjectName("pushButton")
 
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(190, 451, 81, 61))
+        self.pushButton_2.setGeometry(QtCore.QRect(180, 450, 100, 60))
         self.pushButton_2.setObjectName("pushButton_2")
 
         self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(320, 451, 81, 61))
+        self.pushButton_3.setGeometry(QtCore.QRect(310, 450, 100, 60))
         self.pushButton_3.setObjectName("pushButton_3")
 
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(450, 451, 81, 61))
+        self.pushButton_4.setGeometry(QtCore.QRect(440, 450, 100, 60))
         self.pushButton_4.setObjectName("pushButton_4")
 
         self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
@@ -42,7 +42,7 @@ class Ui_MainWindow(object):
         self.pushButton_5.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_7.setGeometry(QtCore.QRect(580, 451, 81, 61))
+        self.pushButton_7.setGeometry(QtCore.QRect(570, 450, 100, 60))
         self.pushButton_7.setObjectName("pushButton_7")
 
         self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
@@ -54,7 +54,7 @@ class Ui_MainWindow(object):
         self.pushButton_9.setObjectName("pushButton_7")
         
         self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.coordination_box_x.setGeometry(QtCore.QRect(50, 290, 100, 25))
+        self.coordination_box_x.setGeometry(QtCore.QRect(100, 290, 100, 25))
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -93,7 +93,7 @@ class Ui_MainWindow(object):
         self.label_3.setObjectName("label_3")
 
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
-        self.label_4.setGeometry(QtCore.QRect(50, 260, 100, 25))
+        self.label_4.setGeometry(QtCore.QRect(100, 260, 100, 25))
         self.label_4.setObjectName("label_3")
 
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
         self.label_10.setObjectName("label_3")
 
         self.coordination_box_y = QtWidgets.QTextEdit(self.centralwidget)
-        self.coordination_box_y.setGeometry(QtCore.QRect(200, 290, 100, 25))
+        self.coordination_box_y.setGeometry(QtCore.QRect(250, 290, 100, 25))
 
         self.Message_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.Message_edit.setGeometry(QtCore.QRect(375, 55, 100, 25))
@@ -177,18 +177,39 @@ class Ui_MainWindow(object):
             Admin_backend.Register_respond=[]
         elif(function_choosed=='write'):
             Admin_backend.message_sending.write_register()
-            if(Admin_backend.error_flag!=0):
+            print(Admin_backend.error_flag)
+            
+            if(Admin_backend.error_flag[0]!=0):
                 self.msgbox = QMessageBox()
                 self.msgbox.setIcon(QMessageBox.Critical)
-                self.msgbox.setText("sending/reading error")
+                if(Admin_backend.error_flag[0]==1):
+                    self.msgbox.setText("wrong type of message")
+                if(Admin_backend.error_flag[0]==2):
+                    self.msgbox.setText("value of message out of limit")
+                if(Admin_backend.error_flag[0]==3):
+                    self.msgbox.setText("value of message out of limit")
                 self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 self.msgbox.show()
+            self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
+            object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
+            self.vbox.addWidget(object)	
+            self.responded_messages.setLayout(self.vbox)			
+            self.scrollArea.setWidget(self.responded_messages)
+            Admin_backend.Register_respond=[]
+            Admin_backend.error_flag=[]
         
         
         
     def getDate(self):
         date = QDate.currentDate()
         return date.toString(Qt.DefaultLocaleLongDate)
+    
+    def unit_selected(self, value):
+        if(int(value)==1):
+            Admin_backend.unit_choice=0
+        else:
+            Admin_backend.unit_choice=0
+            print("to dziala")
 
     def Function_selected(self, value):
         self.register_choice.clear()
@@ -249,6 +270,7 @@ class Ui_MainWindow(object):
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
         self.pushButton_9.clicked.connect(self.Register_window)
         self.unit_choice.addItems(Constants.units)
+        self.unit_choice.currentTextChanged.connect(self.unit_selected)
         self.function_choice.currentTextChanged.connect(self.Function_selected)
         self.function_choice.addItems(Constants.function_select)
         self.register_choice.currentTextChanged.connect(self.name_selected)
