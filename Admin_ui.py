@@ -1,5 +1,5 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel
+from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
@@ -22,39 +22,40 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(60, 451, 81, 61))
+        self.pushButton.setGeometry(QtCore.QRect(50, 450, 100, 60))
         self.pushButton.setObjectName("pushButton")
 
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(190, 451, 81, 61))
+        self.pushButton_2.setGeometry(QtCore.QRect(180, 450, 100, 60))
         self.pushButton_2.setObjectName("pushButton_2")
 
         self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(320, 451, 81, 61))
+        self.pushButton_3.setGeometry(QtCore.QRect(310, 450, 100, 60))
         self.pushButton_3.setObjectName("pushButton_3")
 
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(450, 451, 81, 61))
+        self.pushButton_4.setGeometry(QtCore.QRect(440, 450, 100, 60))
         self.pushButton_4.setObjectName("pushButton_4")
 
         self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_5.setGeometry(QtCore.QRect(500, 55, 50, 25))
         self.pushButton_5.setObjectName("pushButton_5")
+        
+        self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_6.setGeometry(QtCore.QRect(725, 245, 50, 25))
+        self.pushButton_6.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_7.setGeometry(QtCore.QRect(580, 451, 81, 61))
+        self.pushButton_7.setGeometry(QtCore.QRect(570, 450, 100, 60))
         self.pushButton_7.setObjectName("pushButton_7")
 
         self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_8.setGeometry(QtCore.QRect(360, 290, 50, 25))
+        self.pushButton_8.setGeometry(QtCore.QRect(650, 275, 50, 25))
         self.pushButton_8.setObjectName("pushButton_7")
         
         self.pushButton_9 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_9.setGeometry(QtCore.QRect(500, 5, 120, 25))
-        self.pushButton_9.setObjectName("pushButton_7")
-        
-        self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.coordination_box_x.setGeometry(QtCore.QRect(50, 290, 100, 25))
+        self.pushButton_9.setObjectName("pushButton_7")        
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -93,11 +94,11 @@ class Ui_MainWindow(object):
         self.label_3.setObjectName("label_3")
 
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
-        self.label_4.setGeometry(QtCore.QRect(50, 260, 100, 25))
+        self.label_4.setGeometry(QtCore.QRect(30, 265, 100, 25))
         self.label_4.setObjectName("label_3")
 
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
-        self.label_5.setGeometry(QtCore.QRect(250, 260, 100, 25))
+        self.label_5.setGeometry(QtCore.QRect(30, 295, 100, 25))
         self.label_5.setObjectName("label_3")
 
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
@@ -121,9 +122,51 @@ class Ui_MainWindow(object):
         self.label_10.setGeometry(QtCore.QRect(0, 0, 500, 25))
         self.label_10.setObjectName("label_3")
 
-        self.coordination_box_y = QtWidgets.QTextEdit(self.centralwidget)
-        self.coordination_box_y.setGeometry(QtCore.QRect(200, 290, 100, 25))
+        self.label_11 = QtWidgets.QLabel(self.centralwidget)
+        self.label_11.setGeometry(QtCore.QRect(120, 245, 80, 25))
 
+        self.label_12 = QtWidgets.QLabel(self.centralwidget)
+        self.label_12.setGeometry(QtCore.QRect(220, 245, 80, 25))
+        
+        self.label_13 = QtWidgets.QLabel(self.centralwidget)
+        self.label_13.setGeometry(QtCore.QRect(320, 245, 80, 25))
+
+        self.label_14 = QtWidgets.QLabel(self.centralwidget)
+        self.label_14.setGeometry(QtCore.QRect(420, 245, 80, 25))
+        
+        self.label_15 = QtWidgets.QLabel(self.centralwidget)
+        self.label_15.setGeometry(QtCore.QRect(520, 245, 80, 25))
+        
+        self.label_16 = QtWidgets.QLabel(self.centralwidget)
+        self.label_16.setGeometry(QtCore.QRect(10, 245, 80, 25))
+        
+        self.deafult_checkbox = QtWidgets.QCheckBox(self.centralwidget)
+        self.deafult_checkbox.move(70,250)
+        
+        self.coordination_box_y = QtWidgets.QTextEdit(self.centralwidget)
+        self.coordination_box_y.setGeometry(QtCore.QRect(120, 295, 80, 25))
+               
+        self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
+        self.coordination_box_x.setGeometry(QtCore.QRect(120, 265, 80, 25))
+		
+        self.acceleration_box_x = QtWidgets.QTextEdit(self.centralwidget)
+        self.acceleration_box_x.setGeometry(QtCore.QRect(220, 265, 80, 25))
+        
+        self.decceleration_box_x = QtWidgets.QTextEdit(self.centralwidget)
+        self.decceleration_box_x.setGeometry(QtCore.QRect(320, 265, 80, 25))
+        
+        self.velocity_box_x = QtWidgets.QTextEdit(self.centralwidget)
+        self.velocity_box_x.setGeometry(QtCore.QRect(420, 265, 80, 25))        
+      	
+        self.acceleration_box_y = QtWidgets.QTextEdit(self.centralwidget)
+        self.acceleration_box_y.setGeometry(QtCore.QRect(220, 295, 80, 25))
+        
+        self.decceleration_box_y = QtWidgets.QTextEdit(self.centralwidget)
+        self.decceleration_box_y.setGeometry(QtCore.QRect(320, 295, 80, 25))
+        
+        self.velocity_box_y = QtWidgets.QTextEdit(self.centralwidget)
+        self.velocity_box_y.setGeometry(QtCore.QRect(420, 295, 80, 25))
+        
         self.Message_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.Message_edit.setGeometry(QtCore.QRect(375, 55, 100, 25))
         
@@ -135,6 +178,9 @@ class Ui_MainWindow(object):
 
         self.unit_choice = QtWidgets.QComboBox(self.centralwidget)
         self.unit_choice.setGeometry(QtCore.QRect(50, 25, 50, 25))
+        
+        self.positioning_choice = QtWidgets.QComboBox(self.centralwidget)
+        self.positioning_choice.setGeometry(QtCore.QRect(520, 275, 100, 25))
 
         self.function_choice = QtWidgets.QComboBox(self.centralwidget)
         self.function_choice.setGeometry(QtCore.QRect(125, 25, 100, 25))
@@ -177,18 +223,39 @@ class Ui_MainWindow(object):
             Admin_backend.Register_respond=[]
         elif(function_choosed=='write'):
             Admin_backend.message_sending.write_register()
-            if(Admin_backend.error_flag!=0):
+            print(Admin_backend.error_flag)
+            
+            if(Admin_backend.error_flag[0]!=0):
                 self.msgbox = QMessageBox()
                 self.msgbox.setIcon(QMessageBox.Critical)
-                self.msgbox.setText("sending/reading error")
+                if(Admin_backend.error_flag[0]==1):
+                    self.msgbox.setText("wrong type of message")
+                if(Admin_backend.error_flag[0]==2):
+                    self.msgbox.setText("value of message out of limit")
+                if(Admin_backend.error_flag[0]==3):
+                    self.msgbox.setText("value of message out of limit")
                 self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 self.msgbox.show()
+            self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
+            object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
+            self.vbox.addWidget(object)	
+            self.responded_messages.setLayout(self.vbox)			
+            self.scrollArea.setWidget(self.responded_messages)
+            Admin_backend.Register_respond=[]
+            Admin_backend.error_flag=[]
         
         
         
     def getDate(self):
         date = QDate.currentDate()
         return date.toString(Qt.DefaultLocaleLongDate)
+    
+    def unit_selected(self, value):
+        if(int(value)==1):
+            Admin_backend.unit_choice=0
+        else:
+            Admin_backend.unit_choice=1
+            print("to dziala")
 
     def Function_selected(self, value):
         self.register_choice.clear()
@@ -232,6 +299,31 @@ class Ui_MainWindow(object):
         self.Register_ui = Register_window.Ui_Register_Window()
         self.Register_ui.setupUi(self.window)
         self.window.show()
+        
+        
+    def Test_clicked(self):
+        Admin_backend.moving.do_test()		
+    def Move_clicked(self):
+        Admin_backend.moving.do_move()		    
+        
+    def deafult_checkbox_clicked(self , state):	
+        if str(state) == "True": 		
+            self.acceleration_box_x.setDisabled(True)          
+            self.decceleration_box_x.setDisabled(True)  
+            self.velocity_box_x.setDisabled(True)       	
+            self.acceleration_box_y.setDisabled(True)  
+            self.decceleration_box_y.setDisabled(True)          
+            self.velocity_box_y.setDisabled(True)       
+            Admin_backend.move_deafult_flag=1
+        else: 		
+            self.acceleration_box_x.setDisabled(False)          
+            self.decceleration_box_x.setDisabled(False)  
+            self.velocity_box_x.setDisabled(False)       	
+            self.acceleration_box_y.setDisabled(False)  
+            self.decceleration_box_y.setDisabled(False)          
+            self.velocity_box_y.setDisabled(False)  
+            Admin_backend.move_deafult_flag=0
+			
 
 
     def retranslateUi(self, MainWindow):
@@ -244,11 +336,17 @@ class Ui_MainWindow(object):
         self.pushButton_4.setText(_translate("MainWindow", "next"))
         self.pushButton_5.setText(_translate("MainWindow", "Send"))
         self.pushButton_5.clicked.connect(self.send_message)
+        self.pushButton_6.setText(_translate("MainWindow", "test"))
+        self.pushButton_6.clicked.connect(self.Test_clicked)
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
         self.pushButton_8.setText(_translate("MainWindow", "move"))
+        self.pushButton_8.clicked.connect(self.Move_clicked)
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
         self.pushButton_9.clicked.connect(self.Register_window)
+        self.positioning_choice.addItems(Admin_backend.Positioning_values)
+        self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)
+        self.unit_choice.currentTextChanged.connect(self.unit_selected)
         self.function_choice.currentTextChanged.connect(self.Function_selected)
         self.function_choice.addItems(Constants.function_select)
         self.register_choice.currentTextChanged.connect(self.name_selected)
@@ -262,6 +360,12 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
         self.label_9.setText(_translate("MainWindow", " "))
         self.label_10.setText(_translate("MainWindow", "Register Name:"))
+        self.label_11.setText(_translate("MainWindow", "Position:"))
+        self.label_12.setText(_translate("MainWindow", "Acceleration:"))
+        self.label_13.setText(_translate("MainWindow", "Deceleration:"))
+        self.label_14.setText(_translate("MainWindow", "Velocity:"))
+        self.label_15.setText(_translate("MainWindow", "zero:"))
+        self.label_16.setText(_translate("MainWindow", "deafult:"))
         self.DigitalClock.setStyleSheet('background-color: black',)
         self.Register_window()
 

@@ -1,18 +1,20 @@
 import sys
 import sqlite3
 import Constants
+import traceback
 
 Status_registers=[]
 Status_registers_status=[]
+Status_registers_status2=[]
 Status_register_send=''
-Status_register_send_message=''
+Status_register_send_message=' '
 Status_registers_message=[]
 Send_message_type=' '
 allowed_messages_list=[]
-message_send_allowance=1
+message_send_allowance=[]
 message_read_allowance=0
 message_write_allowance=0
-
+position_check=[]
 
 
 
@@ -89,12 +91,13 @@ class interpretation:
                             if(status_register_status_temp[0][0]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536
                             msg_temp=str(round(status_register_status_temp[0][0],3))+'  '+'inc'
+                            position_check.append(round(status_register_status_temp[0][0],3))
                         else:
                             if(status_register_status_temp[0][1]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	
                                  status_register_status_temp[0][1]=status_register_status_temp[0][1]-65536
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))+'  '	+'inc'
-
+                            position_check.append(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))
                     elif(inter['message']=='Hz'):
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
@@ -116,7 +119,7 @@ class interpretation:
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	
                                  status_register_status_temp[0][1]=status_register_status_temp[0][1]-65536
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))+'  '+'inc/s'
-                            
+                            position_check.append(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))
                     elif(inter['message']=='pulse/mS'):
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
@@ -137,40 +140,55 @@ class interpretation:
             Status_registers_message[iter_temp1-1]=str(msg_temp)
     
     
-    def interpretsend():
+    def interpretsend():         
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
         Adress_cursor.execute(""" SELECT name,type,min,max  FROM Limits""")
         fun = Adress_cursor.fetchall()
+        if(len(message_send_allowance)<1):
+            message_send_allowance.append(1)
         Min_limit=0
         Max_limit=0
         Send_message_type=''
-        print(Status_register_send_message)
-        print(allowed_messages_list)
-
+        Status_register_send_message_temp=Status_register_send_message
         for register in fun:
             if (register['name']==Status_register_send):
                 Send_message_type=register['type']
                 Min_limit=register['min']
                 Max_limit=register['max']
         if (Send_message_type=='locked'):
-            if(Status_register_send_message in allowed_messages_list):
-                print('xd')
-                message_send_allowance=1
+            print(allowed_messages_list,Status_register_send_message_temp)
+            if(Status_register_send_message_temp in allowed_messages_list):
+                message_send_allowance[0]=0
+            else:
+                message_send_allowance[0]=1
         elif(Send_message_type=='int'):
             try:
-                Status_register_send_message=int(Status_register_send_message)
-            except:
-                print("xd")
-            print(type(Status_register_send_message))
-        print(Send_message_type)  
-        message_send_allowance=1
+                send_message_temp=int(Status_register_send_message_temp)               
+                if(int(Min_limit)>send_message_temp or int(Max_limit)<send_message_temp):
+                    message_send_allowance[0]=2
+                else:					
+                    message_send_allowance[0]=0
+            except Exception:
+                traceback.print_exc()
+                print("xd2")
+                message_send_allowance[0]=1
+            
+        else:
+            message_send_allowance[0]=1		
+        print(type(Status_register_send_message))
+        print(Send_message_type)        
+        print(message_send_allowance) 
         print("send")
-    def interpretread():
-		
+        
+    def interpretread():		
         message_read_allowance=0
-        print("read")                  
+        print("read")          
+    
+
+	
+            
                     
 
 
