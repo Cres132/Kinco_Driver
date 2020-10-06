@@ -4,6 +4,7 @@ import time
 import serial
 import traceback
 import Interpretation
+import Constants
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
 
@@ -19,6 +20,19 @@ Register_respond_check=[]
 error_flag=[]
 Unit=[0x001,0x002]
 unit_choice=1
+move_deafult_flag=1
+Positioning_values=["Absolute","Relative"]
+position_x=0
+position_y=0
+position_x=0
+acceleration_x=0
+decceleration_x=0
+velocity_x=0
+position_y=0
+acceleration_y=0
+decceleration_y=0
+velocity_y=0
+move_allowance=[0]
 
 class message_sending:
     Defaults.RetryOnEmpty = True
@@ -133,7 +147,6 @@ class message_sending:
         
         
     def write_register():
-
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
@@ -260,4 +273,119 @@ class comboboxes:
 
 
     messages_names()
-
+class moving:
+    def do_move():
+        position_x=0
+        acceleration_x=Constants.deafult_acceleration
+        decceleration_x=Constants.deafult_decceleration
+        velocity_x=Constants.deafult_velocity
+        position_y=0
+        acceleration_y=Constants.deafult_acceleration
+        decceleration_y=Constants.deafult_decceleration
+        velocity_y=Constants.deafult_velocity
+        if(move_deafult_flag==0):		    
+            position_x=self.position_x
+            acceleration_x=self.acceleration_x
+            decceleration_x=self.decceleration_x
+            velocity_x=self.velocity_x
+            position_y=self.position_y
+            acceleration_y=self.acceleration_y
+            decceleration_y=self.decceleration_y
+            velocity_y=self.velocity_y
+        print("hura ruszam sie")
+		
+    def do_test():
+        position_x=0
+        acceleration_x=Constants.deafult_acceleration
+        decceleration_x=Constants.deafult_decceleration
+        velocity_x=Constants.deafult_velocity
+        position_y=0
+        acceleration_y=Constants.deafult_acceleration
+        decceleration_y=Constants.deafult_decceleration
+        velocity_y=Constants.deafult_velocity
+        zero=Constants.deafult_zero 
+        if(move_allowance[0]==0):        
+            moving.do_single_move(1000 ,acceleration_x,decceleration_x,velocity_x,0,zero)
+        else:
+            print("error asd")
+        moving.execute_check(0,1000,zero)
+        if(move_allowance[0]==0):        
+            moving.do_single_move(1000 ,acceleration_x,decceleration_x,velocity_x,1,zero)
+        else:
+            print("error asd2")
+        moving.execute_check(1,1000,zero)
+        if(move_allowance[0]==0):        
+            moving.do_single_move(-1000 ,acceleration_x,decceleration_x,velocity_x,0,zero)
+        else:
+            print("error asd3")
+        moving.execute_check(1,1000,zero)
+        if(move_allowance[0]==0):        
+            moving.do_single_move(-1000 ,acceleration_x,decceleration_x,velocity_x,1,zero)
+        else:
+            print("error asd4")
+			
+        print("przetestowane",move_allowance)
+        
+    def do_single_move(target,acceleration,decceleration,velocity,unit,zero):
+        message_sending.Register="Machine_state"
+        message_sending.Unit=str(unit) 
+        message_sending.message="0x00f"
+     #   message_sending.write_register()
+        message_sending.Register="Operation_modes"
+        message_sending.Unit=str(unit) 
+        message_sending.message="1"
+      #  message_sending.write_register()
+        message_sending.Register="Target_position"
+        message_sending.Unit=str(unit) 
+        message_sending.message=str(target)
+        message_sending.write_register()
+        message_sending.Register="Max_velocity_trap"
+        message_sending.Unit=str(unit) 
+        message_sending.message=str(velocity)
+        message_sending.write_register()
+        message_sending.Register="Max_Accelaration"
+        message_sending.Unit=str(unit) 
+        message_sending.message=str(acceleration)
+        message_sending.write_register()
+        message_sending.Register="Max_Decelaration"
+        message_sending.Unit=str(unit) 
+        message_sending.message=str(decceleration)
+        message_sending.write_register()
+        if(zero=="Absolute"):
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x02f)
+            message_sending.write_register()
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x03f)
+            message_sending.write_register()
+        else:
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x04f)
+          #  message_sending.write_register()
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x05f)
+          #  message_sending.write_register()
+        move_allowance[0]=1
+    
+    def execute_check(Unit,position,zero):
+        check_moving=[0]
+        positions_list=[]
+        while(check_moving[0]==0):
+            message_sending.Register="Position"
+            message_sending.Unit=str(Unit)
+            message_sending.read_register()
+            current_position=Interpretation.position_check[0]
+            if(current_position in positions_list and current_position!=0):
+                check_moving[0]=1
+            elif(len(positions_list)>30):
+                break				
+            else:
+                positions_list.append(current_position)
+                
+			
+			
+		

@@ -14,7 +14,7 @@ allowed_messages_list=[]
 message_send_allowance=[]
 message_read_allowance=0
 message_write_allowance=0
-
+position_check=[]
 
 
 
@@ -91,12 +91,13 @@ class interpretation:
                             if(status_register_status_temp[0][0]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536
                             msg_temp=str(round(status_register_status_temp[0][0],3))+'  '+'inc'
+                            position_check.append(round(status_register_status_temp[0][0],3))
                         else:
                             if(status_register_status_temp[0][1]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	
                                  status_register_status_temp[0][1]=status_register_status_temp[0][1]-65536
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))+'  '	+'inc'
-
+                            position_check.append(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))
                     elif(inter['message']=='Hz'):
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
@@ -118,7 +119,7 @@ class interpretation:
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	
                                  status_register_status_temp[0][1]=status_register_status_temp[0][1]-65536
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))+'  '+'inc/s'
-                            
+                            position_check.append(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))
                     elif(inter['message']=='pulse/mS'):
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
@@ -181,10 +182,13 @@ class interpretation:
         print(message_send_allowance) 
         print("send")
         
-    def interpretread():
-		
+    def interpretread():		
         message_read_allowance=0
-        print("read")                  
+        print("read")          
+    
+
+	
+            
                     
 
 
