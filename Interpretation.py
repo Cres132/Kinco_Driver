@@ -5,6 +5,7 @@ import traceback
 
 Status_registers=[]
 Status_registers_status=[]
+Status_registers_status2=[]
 Status_register_send=''
 Status_register_send_message=' '
 Status_registers_message=[]

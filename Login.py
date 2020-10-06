@@ -19,10 +19,10 @@ class window(QWidget):
         self.window.show()
         
     def new_window2(self):
-        self.window1 = QMainWindow()
-        self.ui2 = Ui_MainWindow1()
-        self.ui2.setupUi(self.window1)
-        self.window1.show()
+        self.window = QMainWindow()
+        self.ui = Ui_GuestWindow()
+        self.ui.setup_guest_Ui(self.window)
+        self.window.show()
 
 
 

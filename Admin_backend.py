@@ -15,22 +15,21 @@ message_name_value=''
 message_names_list= []
 label_text=[]
 Register_respond=[]
+Register_respond_check=[]
 error_flag=[]
 Unit=[0x001,0x002]
-unit_choice=0
+unit_choice=1
 
 class message_sending:
     Defaults.RetryOnEmpty = True
     Defaults.Timeout = 2
     Defaults.Retries = 2
-    Unit = 1
     Register=  ''
     count_r = 1
     message = ''
 	
     
     def check_connection():
-
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
@@ -40,7 +39,7 @@ class message_sending:
         Register_class = ''
         Interpretation.Status_registers=[]
         Interpretation.Status_registers_status=[]
-         
+
         client = modbusclient(method='rtu', port="/dev/ttyUSB0", timeout=1,stopbits=1, bytesize=8, parity='N', baudrate=19200)
         print(str(client))
         connectResult = client.connect()
@@ -57,13 +56,44 @@ class message_sending:
                     assert (hh.function_code < 0x80,hh.function_code)                
                     print(hh.registers)
                     Interpretation.Status_registers.append([adr['name']])
-                    Interpretation.Status_registers_status.append([hh.registers])
-                    
-
+                    Interpretation.Status_registers_status.append([hh.registers])              
                 except:
                     print("error")
-        Interpretation.interpretation.interpretcheck()  
-         
+        Interpretation.interpretation.interpretcheck()
+        iter2=0
+        while(iter2<len(Interpretation.Status_registers)):
+            Register_respond_check.append(str(Interpretation.Status_registers[iter2][0]+':'+Interpretation.Status_registers_message[iter2]))
+            iter2=iter2+1
+        print(Register_respond_check)
+        Interpretation.Status_registers=[]
+        Interpretation.Status_registers_status=[]
+        client = modbusclient(method='rtu', port="/dev/ttyUSB0", timeout=1,stopbits=1, bytesize=8, parity='N', baudrate=19200)
+        print(str(client))
+        connectResult = client.connect()
+        print(connectResult)
+        
+        for adr in fun:
+            if (adr['class']=='RO' or adr['class']=='RW'):
+                count_r=adr['count'] 
+                print(adr['name'])	           
+                Register_adress=adr['adress']
+                adresstemp=int(Register_adress, 16)
+                try:
+                    hh = client.read_holding_registers(address=adresstemp, count=int(count_r), unit=Unit[1])
+                    print(hh)
+                    assert (hh.function_code < 0x80,hh.function_code)                
+                    print(hh.registers)
+                    Interpretation.Status_registers.append([adr['name']])
+                    Interpretation.Status_registers_status.append([hh.registers])              
+                except:
+                    print("error")
+        Interpretation.interpretation.interpretcheck()
+        iter2=0
+        while(iter2<len(Interpretation.Status_registers)):
+            Register_respond_check[iter2]=Register_respond_check[iter2]+"   "+Interpretation.Status_registers_message[iter2]
+            iter2=iter2+1    
+        print(Register_respond_check)
+    
                 
     def read_register():
         Interpretation.Status_registers=[]
@@ -88,8 +118,8 @@ class message_sending:
             connectResult=client.connect()
             try:
                 hh = client.read_holding_registers(address=int(Register_adress,16),count=int(count_r), unit=Unit[unit_choice])
-                assert (hh.function_code < 0x80)
-                
+                print(unit_choice)
+                assert (hh.function_code < 0x80)                
                 Interpretation.Status_registers_message=['']
                 Interpretation.Status_registers.append([Register_name_temp])
                 Interpretation.Status_registers_status.append([hh.registers])
@@ -97,7 +127,7 @@ class message_sending:
             except Exception:
                 traceback.print_exc()
             Interpretation.interpretation.interpretcheck()
-            Register_respond.append(str(Register_name_temp+':'+Interpretation.Status_registers_message[0]))
+            Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp+':'+Interpretation.Status_registers_message[0]))
         client.close()
 
         

@@ -40,6 +40,10 @@ class Ui_MainWindow(object):
         self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_5.setGeometry(QtCore.QRect(500, 55, 50, 25))
         self.pushButton_5.setObjectName("pushButton_5")
+        
+        self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_6.setGeometry(QtCore.QRect(500, 260, 50, 25))
+        self.pushButton_6.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_7.setGeometry(QtCore.QRect(570, 450, 100, 60))
@@ -53,8 +57,6 @@ class Ui_MainWindow(object):
         self.pushButton_9.setGeometry(QtCore.QRect(500, 5, 120, 25))
         self.pushButton_9.setObjectName("pushButton_7")
         
-        self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.coordination_box_x.setGeometry(QtCore.QRect(100, 290, 100, 25))
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -123,6 +125,9 @@ class Ui_MainWindow(object):
 
         self.coordination_box_y = QtWidgets.QTextEdit(self.centralwidget)
         self.coordination_box_y.setGeometry(QtCore.QRect(250, 290, 100, 25))
+               
+        self.coordination_box_x = QtWidgets.QTextEdit(self.centralwidget)
+        self.coordination_box_x.setGeometry(QtCore.QRect(100, 290, 100, 25))
 
         self.Message_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.Message_edit.setGeometry(QtCore.QRect(375, 55, 100, 25))
@@ -208,7 +213,7 @@ class Ui_MainWindow(object):
         if(int(value)==1):
             Admin_backend.unit_choice=0
         else:
-            Admin_backend.unit_choice=0
+            Admin_backend.unit_choice=1
             print("to dziala")
 
     def Function_selected(self, value):
@@ -265,6 +270,8 @@ class Ui_MainWindow(object):
         self.pushButton_4.setText(_translate("MainWindow", "next"))
         self.pushButton_5.setText(_translate("MainWindow", "Send"))
         self.pushButton_5.clicked.connect(self.send_message)
+        self.pushButton_6.setText(_translate("MainWindow", "test"))
+
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
         self.pushButton_8.setText(_translate("MainWindow", "move"))
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
