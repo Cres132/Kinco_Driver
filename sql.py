@@ -269,7 +269,7 @@ class Adress:
    
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Machine_status', 'locked','0','0'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Operation_modes', 'locked','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','-10000','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','0','100000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity_trap', 'int','0','140000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Accelaration', 'int','0','8193'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Decelaration', 'int','0','8193'))
@@ -302,7 +302,7 @@ class Adress:
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_speed_m', 'int','0','0'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_speed_s', 'int','0','0'))         
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Storage_control_param', 'locked','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Save_motor_pram', 'locked','0s','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Save_motor_pram', 'locked','0','0'))
     con.commit()
 
 def czytajdane():

@@ -36,6 +36,9 @@ class Ui_GuestWindow(object):
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_4.setGeometry(QtCore.QRect(440, 250, 100, 60))
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_6.setGeometry(QtCore.QRect(725, 245, 50, 25))
+        self.pushButton_6.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_7.setGeometry(QtCore.QRect(570, 250, 100, 60))

@@ -5,6 +5,7 @@ import serial
 import traceback
 import Interpretation
 import Constants
+import threading
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
 
@@ -17,21 +18,14 @@ message_names_list= []
 label_text=[]
 Register_respond=[]
 Register_respond_check=[]
-error_flag=[]
+error_flag=[1]
+ending_position=[0]
+
 Unit=[0x001,0x002]
 unit_choice=1
-move_deafult_flag=1
+move_deafult_flag=[0]
 Positioning_values=["Absolute","Relative"]
-position_x=0
-position_y=0
-position_x=0
-acceleration_x=0
-decceleration_x=0
-velocity_x=0
-position_y=0
-acceleration_y=0
-decceleration_y=0
-velocity_y=0
+
 move_allowance=[0]
 
 class message_sending:
@@ -175,6 +169,8 @@ class message_sending:
             client = modbusclient(method='RTU', port='/dev/ttyUSB0', timeout=1, stopbits=1, bytesize=8, parity='N',baudrate=19200)
             connectResult=client.connect()
             temp_register_adress=int(Register_adress,16)
+
+            
             try:
                 rq=0
                 message_mutli_temp=[]
@@ -274,28 +270,45 @@ class comboboxes:
 
     messages_names()
 class moving:
-    def do_move():
-        position_x=0
-        acceleration_x=Constants.deafult_acceleration
-        decceleration_x=Constants.deafult_decceleration
-        velocity_x=Constants.deafult_velocity
-        position_y=0
-        acceleration_y=Constants.deafult_acceleration
-        decceleration_y=Constants.deafult_decceleration
-        velocity_y=Constants.deafult_velocity
-        if(move_deafult_flag==0):		    
-            position_x=self.position_x
-            acceleration_x=self.acceleration_x
-            decceleration_x=self.decceleration_x
-            velocity_x=self.velocity_x
-            position_y=self.position_y
-            acceleration_y=self.acceleration_y
-            decceleration_y=self.decceleration_y
-            velocity_y=self.velocity_y
-        print("hura ruszam sie")
-		
+    position_x=0
+    acceleration_x=Constants.deafult_acceleration
+    decceleration_x=Constants.deafult_decceleration
+    velocity_x=Constants.deafult_velocity
+    position_y=0
+    acceleration_y=Constants.deafult_acceleration
+    decceleration_y=Constants.deafult_decceleration
+    velocity_y=Constants.deafult_velocity
+    zero="Relative"
+    print(position_x,acceleration_y,zero)
+    def do_move():    
+        move_allowance[0]=0    
+        position_x=moving.position_x 
+        acceleration_x=moving.acceleration_x
+        decceleration_x=moving.decceleration_x
+        velocity_x=moving.velocity_x
+        position_y=moving.position_y
+        acceleration_y=moving.acceleration_y
+        decceleration_y=moving.decceleration_y
+        velocity_y=moving.velocity_y
+        zero=moving.zero	
+        if(move_deafult_flag[0]==1):             
+            acceleration_x=Constants.deafult_acceleration
+            decceleration_x=Constants.deafult_decceleration
+            velocity_x=Constants.deafult_velocity
+            acceleration_y=Constants.deafult_acceleration
+            decceleration_y=Constants.deafult_decceleration
+            velocity_y=Constants.deafult_velocity
+            print(position_x,acceleration_y)
+        if(position_x!=0 and move_allowance[0]==0 ):
+            moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
+            moving.execute_check(1,position_x,zero)
+        if(position_y!=0 and move_allowance[0]==0):
+            moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
+            moving.execute_check(0,position_y,zero)
+            
     def do_test():
         position_x=0
+        move_allowance[0]=0
         acceleration_x=Constants.deafult_acceleration
         decceleration_x=Constants.deafult_decceleration
         velocity_x=Constants.deafult_velocity
@@ -305,31 +318,34 @@ class moving:
         velocity_y=Constants.deafult_velocity
         zero=Constants.deafult_zero 
         if(move_allowance[0]==0):        
-            moving.do_single_move(1000 ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            moving.execute_check(0,1000,zero)
         else:
             print("error asd")
-        moving.execute_check(0,1000,zero)
+        
         if(move_allowance[0]==0):        
-            moving.do_single_move(1000 ,acceleration_x,decceleration_x,velocity_x,1,zero)
+            moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
+            moving.execute_check(1,1000,zero)
         else:
             print("error asd2")
-        moving.execute_check(1,1000,zero)
+        
         if(move_allowance[0]==0):        
-            moving.do_single_move(-1000 ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            moving.execute_check(0,0,zero)
         else:
             print("error asd3")
-        moving.execute_check(1,1000,zero)
+        
         if(move_allowance[0]==0):        
-            moving.do_single_move(-1000 ,acceleration_x,decceleration_x,velocity_x,1,zero)
+            moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
+            moving.execute_check(1,0,zero)
         else:
-            print("error asd4")
-			
+            print("error asd4")			
         print("przetestowane",move_allowance)
         
     def do_single_move(target,acceleration,decceleration,velocity,unit,zero):
         message_sending.Register="Machine_state"
         message_sending.Unit=str(unit) 
-        message_sending.message="0x00f"
+        message_sending.message="0x0f"
      #   message_sending.write_register()
         message_sending.Register="Operation_modes"
         message_sending.Unit=str(unit) 
@@ -354,38 +370,49 @@ class moving:
         if(zero=="Absolute"):
             message_sending.Register="Machine_state"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x02f)
-            message_sending.write_register()
-            message_sending.Register="Machine_state"
-            message_sending.Unit=str(unit) 
-            message_sending.message=str(0x03f)
-            message_sending.write_register()
-        else:
-            message_sending.Register="Machine_state"
-            message_sending.Unit=str(unit) 
-            message_sending.message=str(0x04f)
+            message_sending.message=str(0x2f)
           #  message_sending.write_register()
             message_sending.Register="Machine_state"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x05f)
+            message_sending.message=str(0x3f)
+           # message_sending.write_register()
+        else:
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x4f)
+          #  message_sending.write_register()
+            message_sending.Register="Machine_state"
+            message_sending.Unit=str(unit) 
+            message_sending.message=str(0x5f)
           #  message_sending.write_register()
         move_allowance[0]=1
     
     def execute_check(Unit,position,zero):
         check_moving=[0]
         positions_list=[]
+        Interpretation.position_check=[0]
         while(check_moving[0]==0):
             message_sending.Register="Position"
             message_sending.Unit=str(Unit)
             message_sending.read_register()
             current_position=Interpretation.position_check[0]
-            if(current_position in positions_list and current_position!=0):
+            print(Interpretation.position_check)
+            if(len(positions_list)==0):
+                ending_position[0]=current_position
+            print(positions_list)
+            print(current_position)
+            if(current_position in positions_list and current_position!=ending_position[0]):
                 check_moving[0]=1
+                error_flag[0]=4                
+                ending_position[0]=current_position
+                move_allowance[0]=0
             elif(len(positions_list)>30):
-                break				
-            else:
+                error_flag[0]=5
+                ending_position[0]=current_position
+                break
+            else:				
                 positions_list.append(current_position)
-                
+                time.sleep(0.1)   
 			
 			
 		
