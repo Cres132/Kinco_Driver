@@ -243,7 +243,7 @@ class Ui_MainWindow(object):
             self.responded_messages.setLayout(self.vbox)			
             self.scrollArea.setWidget(self.responded_messages)
             Admin_backend.Register_respond=[]
-            Admin_backend.error_flag=[]
+            Admin_backend.error_flag[0]=1
         
         
         
@@ -322,7 +322,8 @@ class Ui_MainWindow(object):
     def Move_clicked(self):
         try:
             Admin_backend.moving.position_x=int(self.coordination_box_x.toPlainText())
-            Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText())        
+            Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText()) 
+            Admin_backend.moving.zero=self.positioning_choice.currentText()       
         except Exception:
             traceback.print_exc()
             Admin_backend.error_flag=[6]   
@@ -342,6 +343,7 @@ class Ui_MainWindow(object):
             Admin_backend.moving.do_move()
         self.msgbox = QMessageBox()
         self.msgbox.setIcon(QMessageBox.Critical)
+        print(Admin_backend.error_flag)
         if(Admin_backend.error_flag[0]==1):
             self.msgbox.setText("wrong type of message")
         elif(Admin_backend.error_flag[0]==2):

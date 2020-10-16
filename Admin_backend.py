@@ -113,7 +113,7 @@ class message_sending:
         fun = Adress_cursor.fetchall()
         Register_adress = ''
         Register_class = ''
-        Register_name_temp=''
+        Register_name_temp=' '
         if(Interpretation.message_read_allowance==0):
             for adr in fun:
                 if (message_sending.Register == adr['name']):
@@ -135,7 +135,7 @@ class message_sending:
             except Exception:
                 traceback.print_exc()
             Interpretation.interpretation.interpretcheck()
-            Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp+':'+Interpretation.Status_registers_message[0]))
+            Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp +':'+Interpretation.Status_registers_message[0]))
         client.close()
 
         
@@ -148,6 +148,7 @@ class message_sending:
         fun = Adress_cursor.fetchall()
         Register_adress = ''
         Register_class = ''
+        Register_name_temp=' '
         for adr in fun:
             if (message_sending.Register == adr['name']):
                 Interpretation.Status_register_send = adr['name']
@@ -169,13 +170,15 @@ class message_sending:
             client = modbusclient(method='RTU', port='/dev/ttyUSB0', timeout=1, stopbits=1, bytesize=8, parity='N',baudrate=19200)
             connectResult=client.connect()
             temp_register_adress=int(Register_adress,16)
-
-            
+            try:
+                message_temp=int(message_temp)
+            except:
+                message_temp=int(message_temp,16)
             try:
                 rq=0
                 message_mutli_temp=[]
                 if(int(count_r)==1):			
-                    rq = client.write_register(address=temp_register_adress,value=int(message_temp,16) , unit=1)
+                    rq = client.write_register(address=temp_register_adress,value=int(message_temp) , unit=Unit[unit_choice])
                     print(rq)  
                 else:					
                     if(int(message_temp)<65536):
@@ -203,7 +206,7 @@ class message_sending:
         else:
             print("allowance 1")
         Interpretation.interpretation.interpretcheck()
-        Register_respond.append(str(Register_name_temp+':'+Interpretation.Status_registers_message[0]))
+        Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp +':'+Interpretation.Status_registers_message[0]))
 
 
 
@@ -236,7 +239,6 @@ class comboboxes:
         for adresses in fun:
             if(adresses['name']==register_name_value):
                 label_text.append(adresses['description'])
-
 
 
         if(register_name_value!=''):
@@ -302,9 +304,9 @@ class moving:
         if(position_x!=0 and move_allowance[0]==0 ):
             moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
             moving.execute_check(1,position_x,zero)
-        if(position_y!=0 and move_allowance[0]==0):
+        if(position_x!=0 and move_allowance[0]==0 ):
             moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(0,position_y,zero)
+            moving.execute_check(2,position_y,zero)
             
     def do_test():
         position_x=0
@@ -319,38 +321,42 @@ class moving:
         zero=Constants.deafult_zero 
         if(move_allowance[0]==0):        
             moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            moving.execute_check(0,1000,zero)
+            moving.execute_check(1,1000,zero)
         else:
             print("error asd")
         
         if(move_allowance[0]==0):        
             moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(1,1000,zero)
+            moving.execute_check(2,1000,zero)
         else:
             print("error asd2")
         
         if(move_allowance[0]==0):        
             moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            moving.execute_check(0,0,zero)
+            moving.execute_check(1,0,zero)
         else:
             print("error asd3")
         
         if(move_allowance[0]==0):        
             moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(1,0,zero)
+            moving.execute_check(2,0,zero)
         else:
             print("error asd4")			
         print("przetestowane",move_allowance)
         
     def do_single_move(target,acceleration,decceleration,velocity,unit,zero):
-        message_sending.Register="Machine_state"
-        message_sending.Unit=str(unit) 
-        message_sending.message="0x0f"
-     #   message_sending.write_register()
+          
         message_sending.Register="Operation_modes"
         message_sending.Unit=str(unit) 
         message_sending.message="1"
-      #  message_sending.write_register()
+        message_sending.write_register()  
+       
+        message_sending.Register="Machine_status"        
+        message_sending.Unit=str(unit) 
+        message_sending.message="0x0f"
+        message_sending.write_register()       
+
+       
         message_sending.Register="Target_position"
         message_sending.Unit=str(unit) 
         message_sending.message=str(target)
@@ -367,48 +373,74 @@ class moving:
         message_sending.Unit=str(unit) 
         message_sending.message=str(decceleration)
         message_sending.write_register()
+        print(zero)
         if(zero=="Absolute"):
-            message_sending.Register="Machine_state"
+            message_sending.Register="Machine_status"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x2f)
-          #  message_sending.write_register()
-            message_sending.Register="Machine_state"
+            message_sending.message="0x2f"
+            message_sending.write_register()
+
+               
+            message_sending.Register="Machine_status"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x3f)
-           # message_sending.write_register()
+            message_sending.message="0x3f"
+            message_sending.write_register()
         else:
-            message_sending.Register="Machine_state"
+            message_sending.Register="Machine_status"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x4f)
-          #  message_sending.write_register()
-            message_sending.Register="Machine_state"
+            message_sending.message="0x4f"
+            message_sending.write_register()
+            message_sending.Register="Machine_status"
             message_sending.Unit=str(unit) 
-            message_sending.message=str(0x5f)
-          #  message_sending.write_register()
+            message_sending.message="0x5f"
+            message_sending.write_register()
+
         move_allowance[0]=1
     
     def execute_check(Unit,position,zero):
         check_moving=[0]
         positions_list=[]
         Interpretation.position_check=[0]
+        print(Unit)
         while(check_moving[0]==0):
             message_sending.Register="Position"
             message_sending.Unit=str(Unit)
             message_sending.read_register()
+            message_sending.Register="Drive_status"
+            message_sending.Unit=str(Unit)
+            message_sending.read_register()
+            message_sending.read_register()
+            message_sending.Register="Drive_status"
+            message_sending.Unit=str(Unit)
+            message_sending.read_register()
             current_position=Interpretation.position_check[0]
-            print(Interpretation.position_check)
             if(len(positions_list)==0):
                 ending_position[0]=current_position
             print(positions_list)
             print(current_position)
-            if(current_position in positions_list and current_position!=ending_position[0]):
+            if(current_position==position):
                 check_moving[0]=1
                 error_flag[0]=4                
                 ending_position[0]=current_position
                 move_allowance[0]=0
-            elif(len(positions_list)>30):
-                error_flag[0]=5
+                break
+            if(current_position in positions_list):
+                check_moving[0]=1
+                error_flag[0]=4                
                 ending_position[0]=current_position
+                move_allowance[0]=0
+                break
+            elif(len(positions_list)>30):				
+                message_sending.Register="Machine_status"
+                message_sending.Unit=str(Unit) 
+                message_sending.message="0x06"                
+                ending_position[0]=current_position
+                move_allowance[0]=1
+                message_sending.Register="Sim_dig_in"
+                message_sending.Unit=str(Unit) 
+                message_sending.message="0"   
+                message_sending.write_register() 
+                error_flag[0]=5  
                 break
             else:				
                 positions_list.append(current_position)

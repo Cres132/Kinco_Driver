@@ -24,7 +24,7 @@ Unit_to_change_value = ' '
 
 class interpretation:	
     def interpretcheck():
-        while(len(Status_registers_message)<80):
+        while(len(Status_registers_message)<100):
             Status_registers_message.append("")
             
         Adress_database = sqlite3.connect('Adress.db')
@@ -40,9 +40,7 @@ class interpretation:
             msg_temp=''
             for inter in fun:
                 if ([inter['name']]==status_register_temp):
-                    print(status_register_status_temp)
                     if(str(hex(status_register_status_temp[0][0]))==inter['message']):
-                        print("1")
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536
@@ -153,17 +151,24 @@ class interpretation:
         Max_limit=0
         Send_message_type=''
         Status_register_send_message_temp=Status_register_send_message
+        print(Status_register_send,"tutaj")
         for register in fun:
             if (register['name']==Status_register_send):
                 Send_message_type=register['type']
                 Min_limit=register['min']
                 Max_limit=register['max']
+                
         if (Send_message_type=='locked'):
-            print(allowed_messages_list,Status_register_send_message_temp)
-            if(Status_register_send_message_temp in allowed_messages_list):
-                message_send_allowance[0]=0
-            else:
-                message_send_allowance[0]=1
+            Adress_database = sqlite3.connect('Adress.db')
+            Adress_database.row_factory = sqlite3.Row
+            Adress_cursor = Adress_database.cursor()
+            Adress_cursor.execute(""" SELECT name,function,description  FROM functions """)
+            fun = Adress_cursor.fetchall()
+            for functions in fun:
+                if(Status_register_send==functions['name'] and Status_register_send_message_temp==functions['function']):
+                    message_send_allowance[0]=0
+                    print("asda")
+
         elif(Send_message_type=='int'):
             try:
                 send_message_temp=int(Status_register_send_message_temp)          
@@ -178,9 +183,7 @@ class interpretation:
             
         else:
             message_send_allowance[0]=1		
-        print(type(Status_register_send_message))
-        print(Send_message_type)        
-        print(message_send_allowance) 
+
         print("send")
         
     def interpretread():		
