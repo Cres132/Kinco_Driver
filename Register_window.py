@@ -137,7 +137,7 @@ class Ui_Register_Window(object):
         Registers_to_display=self.Registers_to_display
         while(len(Registers_to_display)<44):
             Registers_to_display.append("")
-        if(Register_count<1):
+        if(Register_count<5):
             Register_count=(Register_count+1)*20
             self.label.setText(str(Registers_to_display[Register_count]))
             self.label_2.setText(str(Registers_to_display[Register_count+1]))
@@ -164,7 +164,7 @@ class Ui_Register_Window(object):
     def prev_registers(self, MainWindow):
         Register_count=self.Register_count
         Registers_to_display=self.Registers_to_display
-        while(len(Registers_to_display)<44):
+        while(len(Registers_to_display)<100):
             Registers_to_display.append("")
         if(Register_count>0):
             Register_count=(Register_count-1)*20
@@ -194,7 +194,7 @@ class Ui_Register_Window(object):
        Admin_backend.message_sending.check_connection()
        self.Registers_to_display=Admin_backend.Register_respond_check
 
-       while(len(self.Registers_to_display)<44):
+       while(len(self.Registers_to_display)<100):
            self.Registers_to_display.append("")
        Registers_to_display=self.Registers_to_display
        Admin_backend.Register_respond_check=[]
@@ -226,7 +226,7 @@ class Ui_Register_Window(object):
        self.pushButton2.setText(_translate("MainWindow", "prev"))
        self.pushButton2.clicked.connect(self.prev_registers)
 
-       
+       3
 if __name__ == "__main__":
     import sys
 

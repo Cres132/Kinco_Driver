@@ -7,6 +7,7 @@ import Constants
 import Admin_backend
 import Home_window
 import Register_window
+import traceback
 class Ui_MainWindow(object):
     names_list=[]
     Readed_registers=[]
@@ -242,7 +243,7 @@ class Ui_MainWindow(object):
             self.responded_messages.setLayout(self.vbox)			
             self.scrollArea.setWidget(self.responded_messages)
             Admin_backend.Register_respond=[]
-            Admin_backend.error_flag=[]
+            Admin_backend.error_flag[0]=1
         
         
         
@@ -302,11 +303,66 @@ class Ui_MainWindow(object):
         
         
     def Test_clicked(self):
-        Admin_backend.moving.do_test()		
+        Admin_backend.moving.do_test()        
+        if(Admin_backend.error_flag[0]!=4):
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)
+            if(Admin_backend.error_flag[0]==5):
+                self.msgbox.setText("Test Error")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+        else:
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Information)            
+            self.msgbox.setText("Test completed succesful")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+			 
+        		
     def Move_clicked(self):
-        Admin_backend.moving.do_move()		    
-        
-    def deafult_checkbox_clicked(self , state):	
+        try:
+            Admin_backend.moving.position_x=int(self.coordination_box_x.toPlainText())
+            Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText()) 
+            Admin_backend.moving.zero=self.positioning_choice.currentText()       
+        except Exception:
+            traceback.print_exc()
+            Admin_backend.error_flag=[6]   
+        if(Admin_backend.move_deafult_flag[0]==0):
+            try:
+                Admin_backend.moving.acceleration_x=int(self.acceleration_box_x.toPlainText())
+                Admin_backend.moving.decceleration_x=int(self.decceleration_box_x.toPlainText())
+                Admin_backend.moving.velocity_x=int(self.velocity_box_x.toPlainText())
+                Admin_backend.moving.acceleration_y=int(self.acceleration_box_y.toPlainText())
+                Admin_backend.moving.decceleration_y=int(self.decceleration_box_y.toPlainText())
+                Admin_backend.moving.velocity_y=int(self.velocity_box_x.toPlainText()) 
+                Admin_backend.moving.zero=self.positioning_choice.currentText()
+            except Exception:
+                traceback.print_exc()
+                Admin_backend.error_flag=[6]
+        if(Admin_backend.error_flag[0]!=6):               
+            Admin_backend.moving.do_move()
+        self.msgbox = QMessageBox()
+        self.msgbox.setIcon(QMessageBox.Critical)
+        print(Admin_backend.error_flag)
+        if(Admin_backend.error_flag[0]==1):
+            self.msgbox.setText("wrong type of message")
+        elif(Admin_backend.error_flag[0]==2):
+             self.msgbox.setText("one of value out of limit")
+        elif(Admin_backend.error_flag[0]==3):
+            self.msgbox.setText("one of value out of limit")
+        elif(Admin_backend.error_flag[0]==5):
+            self.msgbox.setText("Move Error")
+        elif(Admin_backend.error_flag[0]==6):
+            self.msgbox.setText("Invalid input data")
+        else:
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Information)            
+            self.msgbox.setText("Move completed succesful")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        self.msgbox.show()
+        Admin_backend.error_flag[0]=0 
+    def deafult_checkbox_clicked(self , state):
+        Admin_backend.move_deafult_flag=[]	
         if str(state) == "True": 		
             self.acceleration_box_x.setDisabled(True)          
             self.decceleration_box_x.setDisabled(True)  
@@ -314,7 +370,7 @@ class Ui_MainWindow(object):
             self.acceleration_box_y.setDisabled(True)  
             self.decceleration_box_y.setDisabled(True)          
             self.velocity_box_y.setDisabled(True)       
-            Admin_backend.move_deafult_flag=1
+            Admin_backend.move_deafult_flag.append(1)
         else: 		
             self.acceleration_box_x.setDisabled(False)          
             self.decceleration_box_x.setDisabled(False)  
@@ -322,7 +378,7 @@ class Ui_MainWindow(object):
             self.acceleration_box_y.setDisabled(False)  
             self.decceleration_box_y.setDisabled(False)          
             self.velocity_box_y.setDisabled(False)  
-            Admin_backend.move_deafult_flag=0
+            Admin_backend.move_deafult_flag.append(0)
 			
 
 
