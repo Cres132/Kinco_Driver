@@ -1,7 +1,7 @@
+#typowe wartosci rejestrow uzywane wylacznie do testu silnika.
 unit_1='1'
 unit_2='2'
 units=[unit_2,unit_1]
-
 fun1='read'
 fun2='write'
 function_select=[fun1,fun2]
@@ -16,8 +16,8 @@ Max_Homing_velocity=100
 Max_Homing_velocity_n=50
 Max_Homing_acceleration=100
 Max_Homing_offset=10
-deafult_acceleration=8192   #50 rp/s^2
-deafult_decceleration=8192  #50 rp/s^2
-deafult_velocity=136500   #50RPM
+deafult_acceleration=1000  #50 rp/s^2 nie
+deafult_decceleration=100  #50 rp/s^2 nie
+deafult_velocity=13650   #50RPM
 deafult_zero="Absolute"
 
