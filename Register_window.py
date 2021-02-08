@@ -5,24 +5,24 @@ from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
 import Admin_backend
 import Interpretation
-
+#klasa odpowidzialna za wyswietlanie okna z informacjami o rejestrach
 class Ui_Register_Window(object):
+	#tablica i zmienne odpowiedzialne za kontrole wyswitlanych w oknie rejsestrow
     Registers_to_display=[]
     Register_count=0
+    #wyzereowanie wartosci kotronych przy zamknieciu
     def quit(self):
         Registers_to_display=[]
         Admin_backend.Register_respond_check=[]
         sys.exit(app.exec())       
-
-		
+    
+    #tworzenie obiektow okna rejsetrow 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Kinco_Driver")
         MainWindow.resize(600, 550)
-
         
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")  
-
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(10, 0, 500, 25))
@@ -122,16 +122,22 @@ class Ui_Register_Window(object):
         self.pushButton2.setGeometry(QtCore.QRect(10, 500, 100, 25))
         self.pushButton2.setObjectName("pushButton")
         
+        #podzielenie okna na dwie przestrzenie jedna z menu a druga z 
+        #wyswietlanymi rejsestrami
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
+        
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    
+    #funkcja wywolywana przez przycisk next pozwalajaca na wyswietlenie 
+    #nastepnego zestawu rejsestrow przez zmiane tekstow obiektow 
     def next_registers(self, MainWindow):
         Register_count=self.Register_count
         Registers_to_display=self.Registers_to_display
@@ -160,7 +166,9 @@ class Ui_Register_Window(object):
             self.label_19.setText(str(Registers_to_display[Register_count+18]))
             self.label_20.setText(str(Registers_to_display[Register_count+19])) 
             self.Register_count=int(Register_count/20)
-            
+ 
+    #funkcja wywolywana przez przycisk prev pozwalajaca na wyswietlenie 
+    #poprzedniego zestawu rejsestrow   przez zmiane tekstow obiektow          
     def prev_registers(self, MainWindow):
         Register_count=self.Register_count
         Registers_to_display=self.Registers_to_display
@@ -189,16 +197,23 @@ class Ui_Register_Window(object):
             self.label_19.setText(str(Registers_to_display[Register_count+18]))
             self.label_20.setText(str(Registers_to_display[Register_count+19]))          
             self.Register_count=int(Register_count/20)
-   
+    #funkcja wywolywana przy starcie okna sluzy do przypisania obiektom 
+    #gui odpowiednich wartosci i tekstow ktore wczytytywane z 
+    #odpowiednich klas
     def retranslateUi(self, MainWindow):
+		#odpytaj serwomechnizm o stan jego rejestrow
        Admin_backend.message_sending.check_connection()
+       #wczytaj wartosc rejestrow do zmiennej w klasie  
        self.Registers_to_display=Admin_backend.Register_respond_check
-
+       #jesli nie wszytkie rejestry zostaly wczytane uzupelnij reszte 
+       #stron pustymi wartosciami zapobiega bledom
        while(len(self.Registers_to_display)<100):
            self.Registers_to_display.append("")
+       #przypisz nowe wartosci i wyzeroj wartosc rejestrow w klasie admin 
+       #backend zapobiega dublowaniu sie wczytancyh rejestrow
        Registers_to_display=self.Registers_to_display
        Admin_backend.Register_respond_check=[]
-       iter_temp=0
+       #nadaj wartosci tekstowe obiektom okna rejsetrow
        _translate = QtCore.QCoreApplication.translate
        MainWindow.setWindowTitle(_translate("MainWindow", "Registers"))
        self.label.setText(_translate("MainWindow", str(Registers_to_display[0])))
@@ -225,11 +240,9 @@ class Ui_Register_Window(object):
        self.pushButton.clicked.connect(self.next_registers)
        self.pushButton2.setText(_translate("MainWindow", "prev"))
        self.pushButton2.clicked.connect(self.prev_registers)
-
-       3
+#funkcja startowa okna uzywana do testowania
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle(QStyleFactory.create('Fusion'))
     Register_Window = QtWidgets.QMainWindow()
