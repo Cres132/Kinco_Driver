@@ -5,6 +5,12 @@ from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
 import Admin_backend
 import Interpretation
+from digitalclock import DigitalClock
+from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
+from PyQt5.QtGui import QFont
+
 #klasa odpowidzialna za wyswietlanie okna z informacjami o rejestrach
 class Ui_Register_Window(object):
 	#tablica i zmienne odpowiedzialne za kontrole wyswitlanych w oknie rejsestrow
@@ -23,7 +29,13 @@ class Ui_Register_Window(object):
         
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")  
-
+        #mozna podac dane w tablicy jak trzeba mi sie podobaja takie sur
+        #owe stringi
+        #self.table =QtWidgets.QTableWidget(self.centralwidget)
+        #self.table.setGeometry(QtCore.QRect(10, 0, 330, 500))
+        #self.table.setRowCount(21)
+        #self.table.setColumnCount(3)
+        
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(10, 0, 500, 25))
         self.label.setFont(QFont('Arial', 10))
@@ -143,7 +155,7 @@ class Ui_Register_Window(object):
         Registers_to_display=self.Registers_to_display
         while(len(Registers_to_display)<44):
             Registers_to_display.append("")
-        if(Register_count<5):
+        if(Register_count<3):
             Register_count=(Register_count+1)*20
             self.label.setText(str(Registers_to_display[Register_count]))
             self.label_2.setText(str(Registers_to_display[Register_count+1]))

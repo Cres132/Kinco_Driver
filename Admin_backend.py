@@ -1,11 +1,13 @@
 import sys
 import sqlite3
+import datetime
 import time
 import serial
 import traceback
 import Interpretation
 import Constants
 import threading
+from PyQt5.QtCore import QDate, QTime
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
 
@@ -37,8 +39,10 @@ Positioning_values=["Absolute","Relative"]
 move_allowance=[0]
 #zmienna mowiaca o wartosci poczatkowej ruchu
 start_position=0
+#tablica zapisujaca wspolrzedne do zapisania polozenia
+Position_save_info=[]
 #klasa odpopwiadajaca za komunikacje sie z serwomechanizmami
-class message_sending:
+class message_sending(Interpretation.interpretation):
     #okresla wartosc komunikacji po moodbusie dla funkcji
     Defaults.RetryOnEmpty = True
     Defaults.Timeout = 2
@@ -47,6 +51,8 @@ class message_sending:
     Register=  ''
     count_r = 1
     message = ''
+
+    
 	
    #funkcja wczytujaca wartosci wszytskich resjestrow z bazy dancyh 
     def check_connection():
@@ -175,30 +181,29 @@ class message_sending:
         Adress_cursor = Adress_database.cursor()
         Adress_cursor.execute(""" SELECT class,name,adress,description,count  FROM Adress """)
         fun = Adress_cursor.fetchall()
+
         Register_adress = ''
         Register_class = ''
         Register_name_temp=' '
         #sprawdz czy podany rejestr znajduje sie w bazie danych
         for adr in fun:
             if (message_sending.Register == adr['name']):
-                Interpretation.Status_register_send = adr['name']
                 Register_adress=adr['adress']
                 Register_class=adr['class']
                 count_r=adr['count']
                 Register_name_temp=adr['name']
                 print(Register_adress,Register_class)
         #Wczytaj dane podane przez uzytkownika
-        message_temp=message_sending.message        
-        Interpretation.Status_register_send_message=message_sending.message
-        Interpretation.interpretation.interpretsend()
-        #wczytaj flage bledu 
+        message_temp=message_sending.message   
+                #wczytaj flage bledu 
         if(len(error_flag)<1):
-             error_flag.append(1)
-        error_flag[0]=Interpretation.message_send_allowance[0]
+             error_flag.append(1)     
+        print(Register_name_temp,message_temp)    
+        error_flag[0]=Interpretation.interpretation.interpretsend(Register_name_temp,message_temp)
+        print(Interpretation.interpretation.interpretsend(Register_name_temp,message_temp))
         #wyczysc tablice tlumaczace wczytane rejestry
         Interpretation.Status_registers=[]
         Interpretation.Status_registers_status=[]
-        print(message_temp)
         #sprawdz czy wystapil wczesniej blad wczytywania jesli nie 
         # rozpocznij zapis do rejestru
         if(error_flag[0] == 0):
@@ -219,7 +224,6 @@ class message_sending:
                 # rownej 1 komorce pamieci rejestru wyslij wiadomosc
                 if(int(count_r)==1):			
                     rq = client.write_register(address=temp_register_adress,value=int(message_temp) , unit=Unit[unit_choice])
-                    print(rq)  
                 #jesli dlugosc wiadomosci pisana jest do rejestru o dlugosc
                 #rownej 2 komorkom pamieci rejestru dostosuj wartosci wysylane
                 #do rejetru i wyslij wiadomosc		
@@ -231,17 +235,15 @@ class message_sending:
 						#ytana od uzytkownika a do drugiej 0 i wyslij 
 						#na adres rejestru
                         message_multi_temp=[int(message_temp),0]
-                        print('12',message_multi_temp)
+                       
                         rq = client.write_registers(address=temp_register_adress,values=message_multi_temp , unit=Unit[unit_choice])
-                        print(rq)
                     else:
 						#jesli wartosc wiadomosci przekracza wartosc jednego rejestru
 						#wylicz jaka czesc wiadomosci znajdzie sie w drugiej
 						#komorce pamieci i wysllij wiadomosc
                         message_multi_temp=[int(int(message_temp)%65536),int(int(message_temp)//65536)]
                         rq = client.write_registers(address=temp_register_adress,values=message_multi_temp , unit=Unit[unit_choice])						
-                        print(rq)
-                print(message_mutli_temp)
+
                 assert (rq.function_code < 0x80)                
             except Exception:
                 traceback.print_exc()
@@ -249,7 +251,6 @@ class message_sending:
             if(Register_class=='RW'):
                 hh = client.read_holding_registers(address=temp_register_adress,count=int(count_r), unit=Unit[unit_choice])
                 assert (hh.function_code < 0x80)
-                print(str(hh))
                 Interpretation.Status_registers_message=['']
                 Interpretation.Status_registers.append([Register_name_temp])
                 Interpretation.Status_registers_status.append([hh.registers])
@@ -451,24 +452,24 @@ class moving:
 				#z zerem absolutnym
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
-                message_sending.message="0x2f"
+                message_sending.message="0x2F"
                 message_sending.write_register()
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
-                message_sending.message="0x3f"
+                message_sending.message="0x3F"
                 message_sending.write_register()
             else:
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
 				#z zerem absolutnym relatywnym
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
-                message_sending.message="0x4f"
+                message_sending.message="0x4F"
                 message_sending.write_register()
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
-                message_sending.message="0x5f"
+                message_sending.message="0x5F"
                 message_sending.write_register()
             #ppodnies flage wykonywania ruchu
             move_allowance[0]=1
@@ -560,5 +561,64 @@ class moving:
             ending_position[unit_choice]=current_position
             move_allowance[0]=1 
             error_flag[0]=5  
-			
+            
+class button_callbacks:
+	
+    def savepoint_button_callback():
+        global unit_choice
+        global Position_save_info
+        Interpretation.position_check=[0]
+        Position_save_info=[]
+        message_sending.Register="Position"
+        unit_choice=0
+        message_sending.read_register() 
+        Position_save_info.append(Interpretation.position_check[0])
+        Interpretation.position_check=[0]
+        message_sending.Register="Position"
+        unit_choice=1
+        message_sending.read_register() 
+        Position_save_info.append(Interpretation.position_check[0])
+        time = QTime.currentTime()
+        timet = time.toString('hh:mm:ss')
+        now=QDate.currentDate()
+        nowt=now.toString('yyyy:MM:dd')
+        con = sqlite3.connect('Sessions.db')
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()       
+        cur.execute("""
+              CREATE TABLE IF NOT EXISTS tempsession (
+                id INTEGER PRIMARY KEY ASC,
+                xcoordinate  varchar(250)  NOT NULL,
+                ycoordinate varchar(250)  NOT NULL,
+                date date NOT NULL,
+                time varchar(250) NOT NULL
+                )""")
+        cur.execute('INSERT INTO tempsession VALUES(NULL,?, ?, ?, ?);', (str(Position_save_info[0]), str(Position_save_info[1]), nowt,timet))
+        con.commit()
+        Interpretation.position_check=[0]           
+    def previous_buttton_callback():
+	    print('prev')		
+	    
+    def next_buttton_callback():
+        print('next')		
+        
+    def savesession_buttton_callback(title):
+        time = QTime.currentTime()
+        timet = time.toString('hh:mm:ss')
+        now=QDate.currentDate()
+        nowt=now.toString('yyyy:MM:dd')
+        con = sqlite3.connect('Sessions.db')
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+        if title==" ":
+            title=("session"+nowt+"_"+timet)
+        title=title.replace(":","_")            
+        command="ALTER TABLE tempsession RENAME TO %s"%title    
+        print(command)
+        cur.execute(command)
+        print(command)
+        
+    def readsession_buttton_callback(title):    
+        print(title)
+        
 		

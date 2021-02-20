@@ -7,16 +7,9 @@ import traceback
 Status_registers=[]
 Status_registers_status=[]
 Status_registers_status2=[]
-Status_register_send=''
-Status_register_send_message=' '
 Status_registers_message=[]
-Send_message_type=' '
-allowed_messages_list=[]
-message_send_allowance=[]
 message_read_allowance=0
-message_write_allowance=0
 position_check=[0]
-
 Unit_to_change_name = ' '
 Unit_to_change_value = ' '
 
@@ -149,27 +142,25 @@ class interpretation:
     
     #funkcja interpretujaca czy wiadomosc wybrana przez uzytkownika nie 
     #przekracza wartosc i limitow okreslonych w bazie dancyh 
-    def interpretsend():  
+    
+    def interpretsend(register_name,mess):  
 		#wczytaj lokalna baze danych
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
         Adress_cursor.execute(""" SELECT name,type,min,max  FROM Limits""")
         fun = Adress_cursor.fetchall()
-        #sprawdzanie czy tablica zezwolenia na wyslanie zawiera elementy
-        if(len(message_send_allowance)<1):
-            message_send_allowance.append(1)
         #utworzenie zmiennych tymaczaowych okreslajacych limity 
         Min_limit=0
         Max_limit=0
         Send_message_type=''
         #zmienna tymczasowa z wysylana wiadomoscia
-        Status_register_send_message_temp=Status_register_send_message
-        print(Status_register_send,"tutaj")
+        message_temp=mess
+        print(register_name,"tutaj")
         #wczytaj wartosc limitu dla rejestru do ktorego wysylana jest 
         #wiadomosc
         for register in fun:
-            if (register['name']==Status_register_send):
+            if (register['name']==register_name):
                 Send_message_type=register['type']
                 Min_limit=register['min']
                 Max_limit=register['max']
@@ -183,27 +174,28 @@ class interpretation:
             Adress_cursor.execute(""" SELECT name,function,description  FROM functions """)
             fun = Adress_cursor.fetchall()
             for functions in fun:
-                if(Status_register_send==functions['name'] and Status_register_send_message_temp==functions['function']):
-                    message_send_allowance[0]=0
+                if(register_name==functions['name'] and message_temp==functions['function']):
+                    return 0
+            return 1
+
         # jesli jest to wartosc liczbowa 
         elif(Send_message_type=='int'):
             try:
 				# przeksztalc podana przez uzytkownika wartosc w stringu
 				#na int
-                send_message_temp=int(Status_register_send_message_temp)   
+                send_message_temp=int(message_temp)   
                 #sprawdz czy podana wartosc liczbowa miesci sie w okreslonych
                 #w bazie danych granicach      
                 if(int(eval(Min_limit))>send_message_temp or int(Max_limit)<send_message_temp):
-                    message_send_allowance[0]=2
+                    return 2
                 else:					
-                    message_send_allowance[0]=0
+                    return 0
             except Exception:
                 traceback.print_exc()
-
-                message_send_allowance[0]=1
-            
+                return 1            
         else:
-            message_send_allowance[0]=1	
+            return 1	
+            
    #interpretacja wczytytania jeszcze nie zaimplementowana     
     def interpretread():		
         message_read_allowance=0

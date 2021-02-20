@@ -8,6 +8,9 @@ import Admin_backend
 import Home_window
 import Register_window
 import traceback
+import Namesession
+import Session_records
+
 #klasa odpowiedzialna za tworzenia okna admina 
 class Ui_MainWindow(object):
 	#tworzenie zmienncyh tymczasowych
@@ -60,6 +63,10 @@ class Ui_MainWindow(object):
         self.pushButton_9 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_9.setGeometry(QtCore.QRect(500, 5, 120, 25))
         self.pushButton_9.setObjectName("pushButton_7")        
+        
+        self.pushButton_10 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 120, 25))
+        self.pushButton_10.setObjectName("pushButton_7")   
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -83,6 +90,9 @@ class Ui_MainWindow(object):
         self.scrollArea2WidgetContents.setGeometry(QtCore.QRect(0, 0, 699, 99))
         self.scrollArea2WidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollArea2.setWidget(self.scrollArea2WidgetContents)
+        self.scrollArea2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scrollArea2.setWidgetResizable(True)
+        self.scrollArea2.setWidget(self.scrollAreaWidgetContents)
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 5, 331, 25))
@@ -121,9 +131,7 @@ class Ui_MainWindow(object):
         self.label_9.setGeometry(QtCore.QRect(0, 0, 500, 25))
         self.label_9.setObjectName("label_3")
 
-        self.label_10 = QtWidgets.QLabel(self.scrollArea2)
-        self.label_10.setGeometry(QtCore.QRect(0, 0, 500, 25))
-        self.label_10.setObjectName("label_3")
+
 
         self.label_11 = QtWidgets.QLabel(self.centralwidget)
         self.label_11.setGeometry(QtCore.QRect(120, 245, 80, 25))
@@ -196,6 +204,8 @@ class Ui_MainWindow(object):
         
         self.responded_messages = QWidget()
         self.vbox = QVBoxLayout()
+        self.responded_messages2 = QWidget()
+        self.vbox2 = QVBoxLayout()
         #podzielenie okna na czesc z menu i czesc z obiektami
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -353,7 +363,7 @@ class Ui_MainWindow(object):
         except Exception:
             traceback.print_exc()
             Admin_backend.error_flag=[6]   
-            #jesli aktualnie program nie wykonuje ruchu
+            #jesli aktualnie program nie namesession_uiwykonuje ruchu
         if(Admin_backend.move_deafult_flag[0]==0):
             try:
 				#zapisz wczytane uzytkownika informacje o ruchu 
@@ -410,7 +420,36 @@ class Ui_MainWindow(object):
             self.acceleration_box_y.setDisabled(False)  
             self.decceleration_box_y.setDisabled(False)          
             self.velocity_box_y.setDisabled(False)  
-            Admin_backend.move_deafult_flag.append(0)
+            Admin_backend.move_deafult_flag.append(0)  
+
+        
+    def savepoint_callback(self):
+        Admin_backend.button_callbacks.savepoint_button_callback()
+        object = QLabel('Unit1:'+str(Admin_backend.Position_save_info[0])+'     '+'Unit2:'+str(Admin_backend.Position_save_info[1]))
+        self.vbox2.addWidget(object)	
+        self.responded_messages2.setLayout(self.vbox2)			
+        self.scrollArea2.setWidget(self.responded_messages2)
+   
+    def previous_callback(self):
+        Admin_backend.button_callbacks.previous_buttton_callback()
+	
+    def next_callback(self):
+        Admin_backend.button_callbacks.next_buttton_callback()
+	
+    def savesession_callback(self):
+        self.window = QMainWindow()
+        self.namesession_ui = Namesession.Ui_NameSession_Window()
+        self.namesession_ui.setupUi(self.window)
+        self.window.show()     		
+        
+        
+    def readsession_callback(self):
+        self.window = QMainWindow()
+        self.readsession_ui = Session_records.Ui_Session_records_Window()
+        self.readsession_ui.setupUi(self.window)
+        self.window.show()     	
+        
+        
 			
 
     #funkcja uruchamiana przy starcie okna przypsiujaca wartosci oknu 
@@ -421,17 +460,23 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Home"))
         self.pushButton.clicked.connect(self.Home_window)
         self.pushButton_2.setText(_translate("MainWindow", "Save point"))
+        self.pushButton_2.clicked.connect(self.savepoint_callback)
         self.pushButton_3.setText(_translate("MainWindow", "previous"))
+        self.pushButton_3.clicked.connect(self.previous_callback)
         self.pushButton_4.setText(_translate("MainWindow", "next"))
+        self.pushButton_4.clicked.connect(self.next_callback)
         self.pushButton_5.setText(_translate("MainWindow", "Send"))
         self.pushButton_5.clicked.connect(self.send_message)
         self.pushButton_6.setText(_translate("MainWindow", "test"))
         self.pushButton_6.clicked.connect(self.Test_clicked)
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
+        self.pushButton_7.clicked.connect(self.savesession_callback)
         self.pushButton_8.setText(_translate("MainWindow", "move"))
         self.pushButton_8.clicked.connect(self.Move_clicked)
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
         self.pushButton_9.clicked.connect(self.Register_window)
+        self.pushButton_10.setText(_translate("MainWindow", "Read Session"))
+        self.pushButton_10.clicked.connect(self.readsession_callback)
         self.positioning_choice.addItems(Admin_backend.Positioning_values)
         self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)
@@ -448,7 +493,6 @@ class Ui_MainWindow(object):
         self.label_6.setText(_translate("MainWindow", "Message:"))
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
         self.label_9.setText(_translate("MainWindow", " "))
-        self.label_10.setText(_translate("MainWindow", "Register Name:"))
         self.label_11.setText(_translate("MainWindow", "Position:"))
         self.label_12.setText(_translate("MainWindow", "Acceleration:"))
         self.label_13.setText(_translate("MainWindow", "Deceleration:"))
