@@ -1,12 +1,16 @@
 import sqlite3
+import os
+#klasy odpowiedzialne za tworzenie baz danych uzywanych w programie
+#klasa odpowiedzialna za dane logowania
 class check:
+    try:
+        os.remove('users.db')
+    except Exception:
+        print("brak pliku")
     con = sqlite3.connect('users.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS users;")
-
-
-
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY ASC,
@@ -23,11 +27,16 @@ class check:
         users = check.cur.fetchall()
 
 
-
+#klasa odpowiedzialna za informacje o rejestrach serwomechanizmow
 class Adress:
+    try:
+        os.remove('Adress.db')
+    except Exception:
+        print("brak pliku")
     con = sqlite3.connect('Adress.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
+    #tworzenie tablicy informujacych o adresie resjestru metodzie odczytu i zapisu oraz krotkiej infermacji o porzeznaczeniu
     cur.execute("""
             CREATE TABLE IF NOT EXISTS Adress (
                 id INTEGER PRIMARY KEY ASC,
@@ -124,6 +133,8 @@ class Adress:
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL5', '0x0D50', 'Multiple speed control5 '))
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL6', '0x0D60', 'Multiple speed control6 '))
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL7', '0x0D70', 'Multiple speed control7 '))
+    #tworzenie tablicy informujacych dostepnych funkcjach resjestrow 
+    #oraz jednostkkach w ktorych sa podawane
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS functions (
                     id INTEGER PRIMARY KEY ASC,
@@ -188,11 +199,8 @@ class Adress:
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Storage_control_param', '1','Save all parameters '))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Storage_control_param', '10','Initalize all param'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Save_motor_pram', '1','1 Save motor parametrs '))
-
-
-
-
-
+    #tworzenie tablicy informujacych o metodzie interpretacji podanych 
+    #przez uzytkownika funkcji
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS interpretation (
                     id INTEGER PRIMARY KEY ASC,
@@ -281,7 +289,7 @@ class Adress:
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in5', 'number','fuction definition of digital input 5'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in6', 'number','fuction definition of digital input 6'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in7', 'number','fuction definition of digital input 7'))
-    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in7', 'number','fuction definition of digital input 8'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in8', 'number','fuction definition of digital input 8'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out1', 'number','fuction definition of digital output 1'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out2', 'number','fuction definition of digital output2'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out3', 'number','fuction definition of digital output 3'))
@@ -317,13 +325,13 @@ class Adress:
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_current', 'int','0','100'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_current', 'int','0','1000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity', 'int','0','100'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_methods', 'int','0' ,'0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity', 'int','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity_n', 'int','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_acceleration', 'int','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_offset', 'int','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_fol_err', 'int','0','10000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pos_reach_window', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_methods', 'int','0' ,'35'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity', 'int','0','140000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity_n', 'int','0','140000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_acceleration', 'int','0','8193'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_offset', 'int','0','100000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_fol_err', 'int','0','100000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pos_reach_window', 'int','0','1000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Soft_pos_limit', 'int','0','10000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Soft_neg_limit', 'int','0','10000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Vel_loop_gain_prop', 'int','0','100'))
@@ -344,26 +352,26 @@ class Adress:
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Storage_control_param', 'locked','0','10'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Save_motor_pram', 'locked','0','11'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in1',  'int','0','10000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in2', 'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in3',  'int','0','100000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in4',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in5',  'int','0','100000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in6', 'int','0','100000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','1000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out1',  'int','0','1000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out2',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out3',  'int','0','1000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out4',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out5',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out6',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out7',  'int','0','100000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_IN',  'int','0','10000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_OUT',  'int','0','1000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_in', 'int','0','1000000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_out',  'int','0','1000000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in2', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in3',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in4',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in5',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in6', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out1',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out2',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out3',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out4',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out5',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out6',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_IN',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_OUT',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_in', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_out',  'int','0','10000'))
     con.commit()
-
+#funkcja tymaczasowa sprawdzajaca poprawnosc zapisanych danych 
 def czytajdane():
     Adress.cur.execute(""" SELECT id,name,function,description FROM functions """)
     func = Adress.cur.fetchall()

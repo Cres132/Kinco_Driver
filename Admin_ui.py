@@ -8,13 +8,19 @@ import Admin_backend
 import Home_window
 import Register_window
 import traceback
+import Namesession
+import Session_records
+
+#klasa odpowiedzialna za tworzenia okna admina 
 class Ui_MainWindow(object):
+	#tworzenie zmienncyh tymczasowych
     names_list=[]
     Readed_registers=[]
     Responded_messages_list=[]
+    #zakoncz dzialanie programu po zamknieciu okna
     def quit(self):
         sys.exit(app.exec())
-
+    #tworzenie obiektow okna admina
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Kinco_Driver")
         MainWindow.resize(800, 600)
@@ -57,6 +63,10 @@ class Ui_MainWindow(object):
         self.pushButton_9 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_9.setGeometry(QtCore.QRect(500, 5, 120, 25))
         self.pushButton_9.setObjectName("pushButton_7")        
+        
+        self.pushButton_10 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 120, 25))
+        self.pushButton_10.setObjectName("pushButton_7")   
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -80,7 +90,9 @@ class Ui_MainWindow(object):
         self.scrollArea2WidgetContents.setGeometry(QtCore.QRect(0, 0, 699, 99))
         self.scrollArea2WidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollArea2.setWidget(self.scrollArea2WidgetContents)
-
+        self.scrollArea2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scrollArea2.setWidgetResizable(True)
+        self.scrollArea2.setWidget(self.scrollAreaWidgetContents)
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 5, 331, 25))
@@ -89,7 +101,7 @@ class Ui_MainWindow(object):
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(125, 5, 361,25))
         self.label_2.setObjectName("label_2")
-        # Date
+
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(570, 530, 211, 25))
         self.label_3.setObjectName("label_3")
@@ -119,9 +131,7 @@ class Ui_MainWindow(object):
         self.label_9.setGeometry(QtCore.QRect(0, 0, 500, 25))
         self.label_9.setObjectName("label_3")
 
-        self.label_10 = QtWidgets.QLabel(self.scrollArea2)
-        self.label_10.setGeometry(QtCore.QRect(0, 0, 500, 25))
-        self.label_10.setObjectName("label_3")
+
 
         self.label_11 = QtWidgets.QLabel(self.centralwidget)
         self.label_11.setGeometry(QtCore.QRect(120, 245, 80, 25))
@@ -194,6 +204,9 @@ class Ui_MainWindow(object):
         
         self.responded_messages = QWidget()
         self.vbox = QVBoxLayout()
+        self.responded_messages2 = QWidget()
+        self.vbox2 = QVBoxLayout()
+        #podzielenie okna na czesc z menu i czesc z obiektami
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
@@ -202,30 +215,37 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
+        #dodanie zegara na dole okna
         self.DigitalClock = DigitalClock(self.centralwidget)
         self.DigitalClock.setGeometry(QtCore.QRect(570, 553, 130, 21))
         self.retranslateUi(MainWindow) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+    #callback przycisku send obsugujacy wysylanie wiadomosci do serwomechanizmow
     def send_message(self):
+		#wczytaj wartosci nazwy rejestru, funkcji, jednostki, oraz 
+		#wysylanej wiadomosci podanych przez uzytkownika.
         function_choosed=self.function_choice.currentText()
         Admin_backend.message_sending.Register=self.register_choice.currentText()
         Admin_backend.message_sending.Unit=self.unit_choice.currentText()  
         Admin_backend.message_sending.message=self.Message_edit.toPlainText()
-        print(function_choosed)
+        #jesli wybrane jest czytanie z rejestru
         if(function_choosed=='read'):			
+			#wywolaj funkcje czytajaca z rejestr
             Admin_backend.message_sending.read_register()
+            #zapisz do tabeli odebrana wiadomosc 
             self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
             object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
             self.vbox.addWidget(object)	
             self.responded_messages.setLayout(self.vbox)			
             self.scrollArea.setWidget(self.responded_messages)
+            #wyczysc zmienna z wczytaneym rejestrem
             Admin_backend.Register_respond=[]
         elif(function_choosed=='write'):
+			#jesli wybrana funkcja jest pisanie do rejestru wywolaj 
+			#metode piszaca do rejestru
             Admin_backend.message_sending.write_register()
-            print(Admin_backend.error_flag)
-            
+            #korzystajac z flagi podniesionej przez wywolana funkcje 
+            #wyswietl informacji o bledzie podczas wysylania wiadomosci 
             if(Admin_backend.error_flag[0]!=0):
                 self.msgbox = QMessageBox()
                 self.msgbox.setIcon(QMessageBox.Critical)
@@ -237,27 +257,33 @@ class Ui_MainWindow(object):
                     self.msgbox.setText("value of message out of limit")
                 self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 self.msgbox.show()
+            #wyswietl wczytane informacje z nowo zapisanego rejsetru
             self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
             object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
             self.vbox.addWidget(object)	
             self.responded_messages.setLayout(self.vbox)			
             self.scrollArea.setWidget(self.responded_messages)
+            #wyzeroj zmienne kontrolne
             Admin_backend.Register_respond=[]
             Admin_backend.error_flag[0]=1
         
-        
-        
+    #funkcja pobiera aktualna date    
     def getDate(self):
         date = QDate.currentDate()
         return date.toString(Qt.DefaultLocaleLongDate)
     
+    #callback wybrania wartosci okienka unit zapisuje wybrana zmienna do 
+    #odpowiedniego zmiennej w klasie admin_backend
     def unit_selected(self, value):
         if(int(value)==1):
             Admin_backend.unit_choice=0
         else:
             Admin_backend.unit_choice=1
             print("to dziala")
-
+            
+    #callback wybrania wartosci okienka function zapisuje wybrana zmienna 
+    #do odpowiedniego zmiennej w klasie admin_backend i wczytuje mozliwe
+    #wartosci okienka nazw rejestrow
     def Function_selected(self, value):
         self.register_choice.clear()
         Admin_backend.function_value=value
@@ -265,7 +291,10 @@ class Ui_MainWindow(object):
         self.register_choice.addItems(names_list)
         Admin_backend.registers_names_list=[]
         self.Message_edit2.setText(value)
-   
+        
+    #callback wybrania wartosci okienka nazwy rejsestru zapisuje wybrana 
+    #zmienna do odpowiedniego zmiennej w klasie admin_backend i wczytuje
+    #mozliwe wartosci okienka mozliwych wiadomosci
     def name_selected(self, value):
         self.message_choice.clear()
         Admin_backend.register_name_value=value
@@ -275,8 +304,11 @@ class Ui_MainWindow(object):
         if(Admin_backend.label_text!=[]):
             self.label_8.setText(Admin_backend.label_text[0])
             Admin_backend.label_text=[]
-        self.Message_edit3.setText(value)    
-   
+        self.Message_edit3.setText(value)  
+          
+    #callback wybrania wartosci okienka wiadomosci zapisuje wybrana 
+    #zmienna do odpowiedniego zmiennej w klasie admin_backend i wyswietla
+    #podpwiedz do danej wiadomosci
     def message_selected(self, value):
         Admin_backend.message_name_value = value
         print(Admin_backend.label_text)
@@ -288,22 +320,24 @@ class Ui_MainWindow(object):
         print(value)
         if value!='inc' and value!='RPM' and value!='AMP' and value!='number' and value!='rp/s^2':
             self.Message_edit.setText(value)	
- 
+    #callback przcisku home do zaimplementopwania
     def Home_window(self):
         self.window = QMainWindow()
         self.Home_ui = Home_window.Ui_Home_Window()
         self.Home_ui.setupUi(self.window)
         self.window.show()
-
+    #callback przycisku register uruchamia okno rejsetru
     def Register_window(self):
         self.window = QMainWindow()
         self.Register_ui = Register_window.Ui_Register_Window()
         self.Register_ui.setupUi(self.window)
-        self.window.show()
-        
-        
+        self.window.show()        
+    #callback przycisku test wykonuje test serwomechnizmow a w razie
+    #problemow wyswietla informacje o bledzie     
     def Test_clicked(self):
-        Admin_backend.moving.do_test()        
+		#wywolaj metode wykoujaca test
+        Admin_backend.moving.do_test()    
+        #wyswietl informacje czy test sie powiodl    
         if(Admin_backend.error_flag[0]!=4):
             self.msgbox = QMessageBox()
             self.msgbox.setIcon(QMessageBox.Critical)
@@ -318,17 +352,22 @@ class Ui_MainWindow(object):
             self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             self.msgbox.show()
 			 
-        		
+    #funkcja odpowiedzialna za porusznie sie serwomechanizmow    		
     def Move_clicked(self):
         try:
+			#pobierz wartosci o ruchu podane przez uzytkownika i zapisz
+			#w odpowienich zmiennych klasy asmin_backend
             Admin_backend.moving.position_x=int(self.coordination_box_x.toPlainText())
             Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText()) 
-            Admin_backend.moving.zero=self.positioning_choice.currentText()       
+            Admin_backend.moving.zero=self.positioning_choice.currentText()                   
         except Exception:
             traceback.print_exc()
             Admin_backend.error_flag=[6]   
+            #jesli aktualnie program nie namesession_uiwykonuje ruchu
         if(Admin_backend.move_deafult_flag[0]==0):
             try:
+				#zapisz wczytane uzytkownika informacje o ruchu 
+				#do odpowiednich zmienncyh klasy admin_backend
                 Admin_backend.moving.acceleration_x=int(self.acceleration_box_x.toPlainText())
                 Admin_backend.moving.decceleration_x=int(self.decceleration_box_x.toPlainText())
                 Admin_backend.moving.velocity_x=int(self.velocity_box_x.toPlainText())
@@ -339,6 +378,7 @@ class Ui_MainWindow(object):
             except Exception:
                 traceback.print_exc()
                 Admin_backend.error_flag=[6]
+        #wyswietl informacje o statusie ruchu 
         if(Admin_backend.error_flag[0]!=6):               
             Admin_backend.moving.do_move()
         self.msgbox = QMessageBox()
@@ -361,6 +401,8 @@ class Ui_MainWindow(object):
             self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         self.msgbox.show()
         Admin_backend.error_flag[0]=0 
+    #Callback checkboxu wylacza mozliwosc dodawania swoich wartosci do 
+    #ruchu oprocz wspolrzednych    
     def deafult_checkbox_clicked(self , state):
         Admin_backend.move_deafult_flag=[]	
         if str(state) == "True": 		
@@ -378,27 +420,63 @@ class Ui_MainWindow(object):
             self.acceleration_box_y.setDisabled(False)  
             self.decceleration_box_y.setDisabled(False)          
             self.velocity_box_y.setDisabled(False)  
-            Admin_backend.move_deafult_flag.append(0)
+            Admin_backend.move_deafult_flag.append(0)  
+
+        
+    def savepoint_callback(self):
+        Admin_backend.button_callbacks.savepoint_button_callback()
+        object = QLabel('Unit1:'+str(Admin_backend.Position_save_info[0])+'     '+'Unit2:'+str(Admin_backend.Position_save_info[1]))
+        self.vbox2.addWidget(object)	
+        self.responded_messages2.setLayout(self.vbox2)			
+        self.scrollArea2.setWidget(self.responded_messages2)
+   
+    def previous_callback(self):
+        Admin_backend.button_callbacks.previous_buttton_callback()
+	
+    def next_callback(self):
+        Admin_backend.button_callbacks.next_buttton_callback()
+	
+    def savesession_callback(self):
+        self.window = QMainWindow()
+        self.namesession_ui = Namesession.Ui_NameSession_Window()
+        self.namesession_ui.setupUi(self.window)
+        self.window.show()     		
+        
+        
+    def readsession_callback(self):
+        self.window = QMainWindow()
+        self.readsession_ui = Session_records.Ui_Session_records_Window()
+        self.readsession_ui.setupUi(self.window)
+        self.window.show()     	
+        
+        
 			
 
-
+    #funkcja uruchamiana przy starcie okna przypsiujaca wartosci oknu 
+    #gui oraz deklarujaca callbacki
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Kinco Driver"))
         self.pushButton.setText(_translate("MainWindow", "Home"))
         self.pushButton.clicked.connect(self.Home_window)
         self.pushButton_2.setText(_translate("MainWindow", "Save point"))
+        self.pushButton_2.clicked.connect(self.savepoint_callback)
         self.pushButton_3.setText(_translate("MainWindow", "previous"))
+        self.pushButton_3.clicked.connect(self.previous_callback)
         self.pushButton_4.setText(_translate("MainWindow", "next"))
+        self.pushButton_4.clicked.connect(self.next_callback)
         self.pushButton_5.setText(_translate("MainWindow", "Send"))
         self.pushButton_5.clicked.connect(self.send_message)
         self.pushButton_6.setText(_translate("MainWindow", "test"))
         self.pushButton_6.clicked.connect(self.Test_clicked)
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
+        self.pushButton_7.clicked.connect(self.savesession_callback)
         self.pushButton_8.setText(_translate("MainWindow", "move"))
         self.pushButton_8.clicked.connect(self.Move_clicked)
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
         self.pushButton_9.clicked.connect(self.Register_window)
+        self.pushButton_10.setText(_translate("MainWindow", "Read Session"))
+        self.pushButton_10.clicked.connect(self.readsession_callback)
         self.positioning_choice.addItems(Admin_backend.Positioning_values)
         self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)
@@ -415,7 +493,6 @@ class Ui_MainWindow(object):
         self.label_6.setText(_translate("MainWindow", "Message:"))
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
         self.label_9.setText(_translate("MainWindow", " "))
-        self.label_10.setText(_translate("MainWindow", "Register Name:"))
         self.label_11.setText(_translate("MainWindow", "Position:"))
         self.label_12.setText(_translate("MainWindow", "Acceleration:"))
         self.label_13.setText(_translate("MainWindow", "Deceleration:"))
