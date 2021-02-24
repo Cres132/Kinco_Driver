@@ -82,12 +82,14 @@ class message_sending(Interpretation.interpretation):
 					#wczytaj zadany rejestr
                     hh = client.read_holding_registers(address=adresstemp, count=int(count_r), unit=Unit[0])
                     #jesli odpowie kodem bledu rzuc wyjatek
-                    assert (hh.function_code < 0x80,hh.function_code)                
+                    assert (hh.function_code < 0x80)                
                     print(hh.registers)
                     Interpretation.Status_registers.append([adr['name']])
                     Interpretation.Status_registers_status.append([hh.registers])              
-                except:
-                    break 					
+                except Exception:
+                    traceback.print_exc()
+                    client.close()
+                    return 1
                     print("error reading registers from servo")
         #wywolaj funkcje sprawdzajaca i przeksztalcajaca odczytane dane            
         Interpretation.interpretation.interpretcheck()
@@ -115,18 +117,21 @@ class message_sending(Interpretation.interpretation):
                 try:
                     hh = client.read_holding_registers(address=adresstemp, count=int(count_r), unit=Unit[1])
                     print(hh)
-                    assert (hh.function_code < 0x80,hh.function_code)                
+                    assert (hh.function_code < 0x80)                
                     print(hh.registers)
                     Interpretation.Status_registers.append([adr['name']])
                     Interpretation.Status_registers_status.append([hh.registers])              
-                except:
-                    print("error")            
+                except Exception:
+                    traceback.print_exc()
+                    client.close()
+                    return 1                           
         Interpretation.interpretation.interpretcheck()
         iter2=0
         while(iter2<len(Interpretation.Status_registers)):
             Register_respond_check[iter2]=Register_respond_check[iter2]+"   "+Interpretation.Status_registers_message[iter2]
             iter2=iter2+1    
         print(Register_respond_check)
+        return 0
     
     #funkcja czytajaca podany przez uzytkownika rejestr            
     def read_register():
@@ -165,11 +170,15 @@ class message_sending(Interpretation.interpretation):
                 Interpretation.Status_registers_status.append([hh.registers])         
             except Exception:
                 traceback.print_exc()
+                Register_respond.append("connection error")
+                client.close()
+                return 1
             #przytlumacz wczytany rejestr
             Interpretation.interpretation.interpretcheck()
             Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp +':'+Interpretation.Status_registers_message[0]))
         #zakoncz komunikacje prze modbus
         client.close()
+        return 0
 
         
     #funkcja zajmujaca sie pisaniem do wyznaczonego przez uzytkownika 
@@ -196,17 +205,16 @@ class message_sending(Interpretation.interpretation):
         #Wczytaj dane podane przez uzytkownika
         message_temp=message_sending.message   
                 #wczytaj flage bledu 
-        if(len(error_flag)<1):
-             error_flag.append(1)     
+ 
         print(Register_name_temp,message_temp)    
-        error_flag[0]=Interpretation.interpretation.interpretsend(Register_name_temp,message_temp)
+        send_allowance=Interpretation.interpretation.interpretsend(Register_name_temp,message_temp)
         print(Interpretation.interpretation.interpretsend(Register_name_temp,message_temp))
         #wyczysc tablice tlumaczace wczytane rejestry
         Interpretation.Status_registers=[]
         Interpretation.Status_registers_status=[]
         #sprawdz czy wystapil wczesniej blad wczytywania jesli nie 
         # rozpocznij zapis do rejestru
-        if(error_flag[0] == 0):
+        if(send_allowance == 0):
             client = modbusclient(method='RTU', port='/dev/ttyUSB0', timeout=1, stopbits=1, bytesize=8, parity='N',baudrate=19200)
             connectResult=client.connect()
             temp_register_adress=int(Register_adress,16)
@@ -245,8 +253,10 @@ class message_sending(Interpretation.interpretation):
                         rq = client.write_registers(address=temp_register_adress,values=message_multi_temp , unit=Unit[unit_choice])						
 
                 assert (rq.function_code < 0x80)                
-            except Exception:
+            except Exception:                
                 traceback.print_exc()
+                return 4
+                
             #jesli mozna odczytac wartosc z rejsetru odczytaj nowo wpisana wartosc
             if(Register_class=='RW'):
                 hh = client.read_holding_registers(address=temp_register_adress,count=int(count_r), unit=Unit[unit_choice])
@@ -255,10 +265,12 @@ class message_sending(Interpretation.interpretation):
                 Interpretation.Status_registers.append([Register_name_temp])
                 Interpretation.Status_registers_status.append([hh.registers])
             client.close()
-
+        else:
+             return send_allowance
 		#prztlumacz odczytana wiadomosc	
         Interpretation.interpretation.interpretcheck()
         Register_respond.append(str("Unit "+str(int(Unit[unit_choice]))+"  "+Register_name_temp +':'+Interpretation.Status_registers_message[0]))
+        return 0
 
 #klasa zajmujaca sie obsluga okien wczytywywania danych od uzytkownika
 class comboboxes:
@@ -357,11 +369,19 @@ class moving:
         #jesli serwomechanizm nie wykonuje ruchu wykonaj ruch najpierw
         #jednego serwomechanizmu nastepnie drugiego
         if(move_allowance[0]==0 ):
-            moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
-            moving.execute_check(0,position_x,zero)
+            result=moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
+            if(result==0):           
+                moving.execute_check(0,position_x,zero)
+            else:
+                print(result)
+                return result 
         if(move_allowance[0]==0 ):
-            moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(1,position_y,zero)
+            result=moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
+            if(result==0):            
+                moving.execute_check(1,position_y,zero)
+            else:
+                return result 
+        return 0
     
     #funkcja testujaca czy serwomechanizm porusza sie poprawnie        
     def do_test():
@@ -379,30 +399,42 @@ class moving:
         #test polega na wykonaniu ruchu nastepnie wroceniu na miejsce 
         #pierwotne przez serwomechanizmy
         if(move_allowance[0]==0):        
-            moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            moving.execute_check(1,1000,zero)
+            result=moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            if(result==0):  
+                moving.execute_check(1,1000,zero)
+            else:
+                return result
         else:
             print("error asd")
         
         if(move_allowance[0]==0):        
-            moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(2,1000,zero)
+            result=moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
+            if(result==0):            
+                moving.execute_check(2,1000,zero)
+            else:
+                return result             
         else:
             print("error asd2")
         
         if(move_allowance[0]==0):        
-            moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            moving.execute_check(1,0,zero)
+            result=moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            if(result==0):                  
+                 moving.execute_check(1,0,zero)
+            else:
+                return result   
         else:
             print("error asd3")
         
         if(move_allowance[0]==0):        
-            moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            moving.execute_check(2,0,zero)
+            result=moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
+            if(result==0):
+                moving.execute_check(2,0,zero)
+            else:
+                return result       
         else:
             print("error asd4")			
         print("przetestowane",move_allowance)
-     
+        return 0
     #funkcja wykonujaca ruch    
     def do_single_move(target,acceleration,decceleration,velocity,unit,zero):
         try:
@@ -420,32 +452,50 @@ class moving:
             message_sending.Register="Operation_modes"
             message_sending.Unit=str(unit) 
             message_sending.message="1"
-            message_sending.write_register()  
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result
             #wlacz silniki serwomechanizmu
             message_sending.Register="Machine_status"        
             message_sending.Unit=str(unit) 
-            message_sending.message="0x0f"
-            message_sending.write_register()         
+            message_sending.message="0x0F"
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result        
             #okresl pozycje docelowa   
             message_sending.Register="Target_position"
             message_sending.Unit=str(unit) 
             message_sending.message=str(target)
-            message_sending.write_register()
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result
             #ustaw maksymalna predkosc
             message_sending.Register="Max_velocity_trap"
             message_sending.Unit=str(unit) 
             message_sending.message=str(velocity)            
-            message_sending.write_register()
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result
             #ustaw maksymalne przyspieszenie
             message_sending.Register="Max_Accelaration"
             message_sending.Unit=str(unit) 
             message_sending.message=str(acceleration)
-            message_sending.write_register()
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result
             #ustaw maksymalne przyspieszenie hamowania
             message_sending.Register="Max_Decelaration"
             message_sending.Unit=str(unit) 
             message_sending.message=str(decceleration)
-            message_sending.write_register()
+            result=message_sending.write_register()
+            if(result!=0):
+                error_flag[0]=result
+                return result
             print(zero)
             if(zero=="Absolute"):
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
@@ -453,24 +503,38 @@ class moving:
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x2F"
-                message_sending.write_register()
+                result=message_sending.write_register()
+                if(result!=0):
+                   move_allowance[0]=1
+                   error_flag[0]=result
+                   return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x3F"
-                message_sending.write_register()
+                result=message_sending.write_register()
+                if(result!=0):
+                   move_allowance[0]=1
+                   error_flag[0]=result
+                   return result
             else:
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
 				#z zerem absolutnym relatywnym
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x4F"
-                message_sending.write_register()
+                result=message_sending.write_register()
+                if(result!=0):
+                   error_flag[0]=result
+                   return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x5F"
-                message_sending.write_register()
+                result=message_sending.write_register()
+                if(result!=0):
+                   error_flag[0]=result
+                   return result
             #ppodnies flage wykonywania ruchu
             move_allowance[0]=1
         except Exception:
@@ -483,7 +547,10 @@ class moving:
             ending_position[unit_choice]=start_position
             move_allowance[0]=1 
             error_flag[0]=5  
-    #funkcja sprawdzajaca czy ruch wykonywany jest poprawnie        
+            return 1
+        return 0            
+    #funkcja sprawdzajaca czy ruch wykonywany jest poprawnie    
+        
     def execute_check(Unit,position,zero):
         try:
 			#pobierz wartosc startowa i stworz zmienne tymczasowe
@@ -504,11 +571,23 @@ class moving:
             while(check_moving[0]==0):
                 message_sending.Register="Position"
                 message_sending.Unit=str(Unit)
-                message_sending.read_register() 
+                result=message_sending.read_register() 
                 current_position=Interpretation.position_check[0]     
                 print(current_position)
                 #jesli polozenia zgadza sie z docelowym podnies flage
                 #i zakoncz petle odpytywania.
+                if(result!=0):
+                    check_moving[0]=1
+                    error_flag[0]=4                
+                    ending_position[unit_choice]=current_position
+                    move_allowance[0]=0
+                    message_sending.Register="Machine_status"
+                    message_sending.Unit=str(Unit) 
+                    message_sending.message="0x06" 
+                    message_sending.write_register() 
+                    break                
+					
+					
                 if(current_position==target_position):
                     message_sending.write_register()
                     check_moving[0]=1
@@ -561,7 +640,7 @@ class moving:
             ending_position[unit_choice]=current_position
             move_allowance[0]=1 
             error_flag[0]=5  
-            
+  
 class button_callbacks:
 	
     def savepoint_button_callback():

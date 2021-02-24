@@ -231,32 +231,41 @@ class Ui_MainWindow(object):
         #jesli wybrane jest czytanie z rejestru
         if(function_choosed=='read'):			
 			#wywolaj funkcje czytajaca z rejestr
-            Admin_backend.message_sending.read_register()
+            result=Admin_backend.message_sending.read_register()
             #zapisz do tabeli odebrana wiadomosc 
-            self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
-            object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
-            self.vbox.addWidget(object)	
-            self.responded_messages.setLayout(self.vbox)			
-            self.scrollArea.setWidget(self.responded_messages)
-            #wyczysc zmienna z wczytaneym rejestrem
+            if (result==0):
+                self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
+                object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
+                self.vbox.addWidget(object)	
+                self.responded_messages.setLayout(self.vbox)			
+                self.scrollArea.setWidget(self.responded_messages)
+                #wyczysc zmienna z wczytaneym rejestrem
+            else: 
+                self.msgbox = QMessageBox()
+                self.msgbox.setIcon(QMessageBox.Critical)
+                self.msgbox.setText("check connection") 
+                self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+                self.msgbox.show()  
             Admin_backend.Register_respond=[]
         elif(function_choosed=='write'):
 			#jesli wybrana funkcja jest pisanie do rejestru wywolaj 
 			#metode piszaca do rejestru
-            Admin_backend.message_sending.write_register()
+            result=Admin_backend.message_sending.write_register()
             #korzystajac z flagi podniesionej przez wywolana funkcje 
             #wyswietl informacji o bledzie podczas wysylania wiadomosci 
-            if(Admin_backend.error_flag[0]!=0):
+            if(result!=0):
                 self.msgbox = QMessageBox()
                 self.msgbox.setIcon(QMessageBox.Critical)
-                if(Admin_backend.error_flag[0]==1):
+                if(result==1):
                     self.msgbox.setText("wrong type of message")
-                if(Admin_backend.error_flag[0]==2):
+                elif(result==2):
                     self.msgbox.setText("value of message out of limit")
-                if(Admin_backend.error_flag[0]==3):
+                elif(result==3):
                     self.msgbox.setText("value of message out of limit")
+                else:
+                    self.msgbox.setText("unknown error")
                 self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-                self.msgbox.show()
+                self.msgbox.show()                
             #wyswietl wczytane informacje z nowo zapisanego rejsetru
             self.Responded_messages_list.append(Admin_backend.Register_respond[len(Admin_backend.Register_respond)-1])
             object = QLabel(self.Responded_messages_list[len(self.Responded_messages_list)-1])
@@ -265,7 +274,7 @@ class Ui_MainWindow(object):
             self.scrollArea.setWidget(self.responded_messages)
             #wyzeroj zmienne kontrolne
             Admin_backend.Register_respond=[]
-            Admin_backend.error_flag[0]=1
+
         
     #funkcja pobiera aktualna date    
     def getDate(self):
@@ -328,21 +337,30 @@ class Ui_MainWindow(object):
         self.window.show()
     #callback przycisku register uruchamia okno rejsetru
     def Register_window(self):
-        self.window = QMainWindow()
-        self.Register_ui = Register_window.Ui_Register_Window()
-        self.Register_ui.setupUi(self.window)
-        self.window.show()        
-    #callback przycisku test wykonuje test serwomechnizmow a w razie
-    #problemow wyswietla informacje o bledzie     
-    def Test_clicked(self):
-		#wywolaj metode wykoujaca test
-        Admin_backend.moving.do_test()    
-        #wyswietl informacje czy test sie powiodl    
-        if(Admin_backend.error_flag[0]!=4):
+        #odpytaj serwomechnizm o stan jego rejestrow
+        connection_result=Admin_backend.message_sending.check_connection()
+        if (connection_result==0):
+           self.window = QMainWindow()
+           self.Register_ui = Register_window.Ui_Register_Window()
+           self.Register_ui.setupUi(self.window)
+           self.window.show()        
+        else:
             self.msgbox = QMessageBox()
             self.msgbox.setIcon(QMessageBox.Critical)
-            if(Admin_backend.error_flag[0]==5):
-                self.msgbox.setText("Test Error")
+            self.msgbox.setText("Check connection")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+    #callback przycisku test wykonuje test serwomechnizmow a w razie
+    #problemow wyswietla informacje o bledzie    
+     
+    def Test_clicked(self):
+		#wywolaj metode wykoujaca test
+        result=Admin_backend.moving.do_test()    
+        #wyswietl informacje czy test sie powiodl    
+        if(result!=0):
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)
+            self.msgbox.setText("Test Error")
             self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             self.msgbox.show()
         else:
@@ -363,7 +381,7 @@ class Ui_MainWindow(object):
         except Exception:
             traceback.print_exc()
             Admin_backend.error_flag=[6]   
-            #jesli aktualnie program nie namesession_uiwykonuje ruchu
+            #jesli aktualnie program nie namesession_ui wykonuje ruchu
         if(Admin_backend.move_deafult_flag[0]==0):
             try:
 				#zapisz wczytane uzytkownika informacje o ruchu 

@@ -213,8 +213,6 @@ class Ui_Register_Window(object):
     #gui odpowiednich wartosci i tekstow ktore wczytytywane z 
     #odpowiednich klas
     def retranslateUi(self, MainWindow):
-		#odpytaj serwomechnizm o stan jego rejestrow
-       Admin_backend.message_sending.check_connection()
        #wczytaj wartosc rejestrow do zmiennej w klasie  
        self.Registers_to_display=Admin_backend.Register_respond_check
        #jesli nie wszytkie rejestry zostaly wczytane uzupelnij reszte 
