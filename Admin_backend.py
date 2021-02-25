@@ -24,7 +24,6 @@ Register_respond=[]
 #zmienna kontrolna do przechowujaca rejsestry
 Register_respond_check=[]
 #flaga bledu do okreslajaca wiadomosci wyswietlane wgui
-error_flag=[1]
 #zmienna wykorzystywana w kontroli ruchu do okreslenia wartosci na ktorej
 #skonczony byl poprzedni rcuh
 ending_position=[0,0]
@@ -41,6 +40,8 @@ move_allowance=[0]
 start_position=0
 #tablica zapisujaca wspolrzedne do zapisania polozenia
 Position_save_info=[]
+Saved_points=[]
+current_point=0
 #klasa odpopwiadajaca za komunikacje sie z serwomechanizmami
 class message_sending(Interpretation.interpretation):
     #okresla wartosc komunikacji po moodbusie dla funkcji
@@ -371,14 +372,18 @@ class moving:
         if(move_allowance[0]==0 ):
             result=moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):           
-                moving.execute_check(0,position_x,zero)
+                result2=moving.execute_check(0,position_x,zero)
+                if(result2!=0):
+                    return result2
             else:
                 print(result)
                 return result 
         if(move_allowance[0]==0 ):
             result=moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
             if(result==0):            
-                moving.execute_check(1,position_y,zero)
+                result2=moving.execute_check(1,position_y,zero)
+                if(result2!=0):
+                    return result2
             else:
                 return result 
         return 0
@@ -401,7 +406,9 @@ class moving:
         if(move_allowance[0]==0):        
             result=moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):  
-                moving.execute_check(1,1000,zero)
+                result2=moving.execute_check(1,1000,zero)
+                if(result2!=0):
+                    return result2 
             else:
                 return result
         else:
@@ -410,7 +417,9 @@ class moving:
         if(move_allowance[0]==0):        
             result=moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
             if(result==0):            
-                moving.execute_check(2,1000,zero)
+                result2=moving.execute_check(2,1000,zero)
+                if(result2!=0):
+                    return result2 
             else:
                 return result             
         else:
@@ -419,7 +428,9 @@ class moving:
         if(move_allowance[0]==0):        
             result=moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):                  
-                 moving.execute_check(1,0,zero)
+                 result2=moving.execute_check(1,0,zero)
+                 if(result2!=0):
+                    return result2 
             else:
                 return result   
         else:
@@ -428,7 +439,9 @@ class moving:
         if(move_allowance[0]==0):        
             result=moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
             if(result==0):
-                moving.execute_check(2,0,zero)
+                result2=moving.execute_check(2,0,zero)
+                if(result2!=0):
+                    return result2 
             else:
                 return result       
         else:
@@ -454,7 +467,6 @@ class moving:
             message_sending.message="1"
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result
             #wlacz silniki serwomechanizmu
             message_sending.Register="Machine_status"        
@@ -462,7 +474,6 @@ class moving:
             message_sending.message="0x0F"
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result        
             #okresl pozycje docelowa   
             message_sending.Register="Target_position"
@@ -470,7 +481,6 @@ class moving:
             message_sending.message=str(target)
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result
             #ustaw maksymalna predkosc
             message_sending.Register="Max_velocity_trap"
@@ -478,7 +488,6 @@ class moving:
             message_sending.message=str(velocity)            
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result
             #ustaw maksymalne przyspieszenie
             message_sending.Register="Max_Accelaration"
@@ -486,7 +495,6 @@ class moving:
             message_sending.message=str(acceleration)
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result
             #ustaw maksymalne przyspieszenie hamowania
             message_sending.Register="Max_Decelaration"
@@ -494,7 +502,6 @@ class moving:
             message_sending.message=str(decceleration)
             result=message_sending.write_register()
             if(result!=0):
-                error_flag[0]=result
                 return result
             print(zero)
             if(zero=="Absolute"):
@@ -506,7 +513,6 @@ class moving:
                 result=message_sending.write_register()
                 if(result!=0):
                    move_allowance[0]=1
-                   error_flag[0]=result
                    return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
@@ -515,7 +521,6 @@ class moving:
                 result=message_sending.write_register()
                 if(result!=0):
                    move_allowance[0]=1
-                   error_flag[0]=result
                    return result
             else:
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
@@ -525,7 +530,6 @@ class moving:
                 message_sending.message="0x4F"
                 result=message_sending.write_register()
                 if(result!=0):
-                   error_flag[0]=result
                    return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
@@ -533,7 +537,6 @@ class moving:
                 message_sending.message="0x5F"
                 result=message_sending.write_register()
                 if(result!=0):
-                   error_flag[0]=result
                    return result
             #ppodnies flage wykonywania ruchu
             move_allowance[0]=1
@@ -546,8 +549,7 @@ class moving:
             message_sending.write_register()             
             ending_position[unit_choice]=start_position
             move_allowance[0]=1 
-            error_flag[0]=5  
-            return 1
+            return 5
         return 0            
     #funkcja sprawdzajaca czy ruch wykonywany jest poprawnie    
         
@@ -577,33 +579,23 @@ class moving:
                 #jesli polozenia zgadza sie z docelowym podnies flage
                 #i zakoncz petle odpytywania.
                 if(result!=0):
-                    check_moving[0]=1
-                    error_flag[0]=4                
+                    check_moving[0]=1               
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=0
                     message_sending.Register="Machine_status"
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06" 
                     message_sending.write_register() 
-                    break                
+                    return 4                
 					
 					
                 if(current_position==target_position):
                     message_sending.write_register()
-                    check_moving[0]=1
-                    error_flag[0]=4                
+                    check_moving[0]=1                                 
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=0
-                    #przy takim pozycjonowaniu wylaczenie silnikow po 
-                    #znalezieniu sie w pozcyji docelowej powoduje blad 
-                    #wynikajacy z ustalania sie pozycji w petli. nie wymyslilem
-                    #jeszcze jak to obejsc proba podana na dole zakoczyla sie porazka 
-                    #time.sleep(0.3)   
-                    #message_sending.Register="Machine_status"
-                    #message_sending.Unit=str(Unit) 
-                    #message_sending.message="0x06" 
-                    #message_sending.write_register()                    
-                    break
+                    return 0
+
                 #jesli pozycja sie powtarza i dana pozycja nie jest docelowa 
                 #czyli gdy serwomechanizm sie nie porusza wyrzuc blad    
                 if(current_position in positions_list and current_position!=target_position):
@@ -611,11 +603,10 @@ class moving:
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06" 
                     message_sending.write_register()
-                    check_moving[0]=1
-                    error_flag[0]=5                
+                    check_moving[0]=1               
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=0                              
-                    break
+                    return 5
                 #jesli uklad wykonuje ruch przez ponad 15 sekund program przerywa ruch i 
                 #wyrzuca blad mozna usunac jeesli bedzie zbedne    
                 elif(len(positions_list)>150):				
@@ -625,8 +616,7 @@ class moving:
                     message_sending.write_register()             
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=1 
-                    error_flag[0]=5  
-                    break
+                    return 5
                 else:									
                     positions_list.append(current_position)
                     time.sleep(0.1)   
@@ -639,13 +629,14 @@ class moving:
             message_sending.write_register()             
             ending_position[unit_choice]=current_position
             move_allowance[0]=1 
-            error_flag[0]=5  
+            return 5
   
 class button_callbacks:
 	
     def savepoint_button_callback():
         global unit_choice
         global Position_save_info
+        global current_point
         Interpretation.position_check=[0]
         Position_save_info=[]
         message_sending.Register="Position"
@@ -657,6 +648,8 @@ class button_callbacks:
         unit_choice=1
         message_sending.read_register() 
         Position_save_info.append(Interpretation.position_check[0])
+        Saved_points.append([Position_save_info[0],Position_save_info[1]]) 
+        current_point=(len(Saved_points))-1
         time = QTime.currentTime()
         timet = time.toString('hh:mm:ss')
         now=QDate.currentDate()
@@ -676,10 +669,21 @@ class button_callbacks:
         con.commit()
         Interpretation.position_check=[0]           
     def previous_buttton_callback():
-	    print('prev')		
-	    
+        global current_point
+        if len(Saved_points)>0:
+            if current_point>0:
+     	        current_point=current_point-1
+     	        return Saved_points[current_point]
+            else:
+     	        return Saved_points[0]
+
     def next_buttton_callback():
-        print('next')		
+        global current_point
+        if current_point<len(Saved_points)-1:
+     	    current_point=current_point+1
+     	    return Saved_points[current_point]
+        else:
+            return Saved_points[len(Saved_points)-1]	
         
     def savesession_buttton_callback(title):
         time = QTime.currentTime()

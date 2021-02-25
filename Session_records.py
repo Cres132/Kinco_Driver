@@ -1,5 +1,5 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow
+from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow,QWidget
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
@@ -9,7 +9,7 @@ import sqlite3
 import sys
 
 
-class Ui_Session_records_Window(object):
+class Ui_Session_records_Window(QWidget):
     session_name=" "	
     def quit(self):
         sys.exit(app.exec_())    
@@ -37,15 +37,7 @@ class Ui_Session_records_Window(object):
         self.pushButton_2.setGeometry(QtCore.QRect(150, 90 , 75, 25))
         self.pushButton_2.setObjectName("pushButton_7") 
        
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 200, 21))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -53,9 +45,9 @@ class Ui_Session_records_Window(object):
 	#trzeba dodac wiecej zabezpieczen	
     def proceed_callback(self,MainWindow):
         try:
-			#mam problem z zamykaniem okien
             self.session_name=self.sessions.currentText()
             Admin_backend.button_callbacks.readsession_buttton_callback(self.session_name)
+            self.close()
         except Exception:
             traceback.print_exc()
         
@@ -80,9 +72,8 @@ class Ui_Session_records_Window(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Choose session"))
 	    
         self.label.setText(_translate("MainWindow", "Choose name of session to read"))
-        #nie dziala za dobrze :(
         self.pushButton_1.setText(_translate("MainWindow", "exit"))
-        self.pushButton_1.clicked.connect(self.quit)	  
+        self.pushButton_1.clicked.connect(self.close)	  
 	      
         self.pushButton_2.setText(_translate("MainWindow", "proceed"))
         self.pushButton_2.clicked.connect(self.proceed_callback)
@@ -94,8 +85,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle(QStyleFactory.create('Fusion'))
-    Register_Window = QtWidgets.QMainWindow()
     ui = Ui_Session_records_Window()
-    ui.setupUi(Register_Window)
-    Register_Window.show()
+    ui.setupUi(ui)
+    ui.show()
     sys.exit(app.exec_())

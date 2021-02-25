@@ -263,7 +263,7 @@ class Ui_MainWindow(object):
                 elif(result==3):
                     self.msgbox.setText("value of message out of limit")
                 else:
-                    self.msgbox.setText("unknown error")
+                    self.msgbox.setText("Check connection")
                 self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 self.msgbox.show()                
             #wyswietl wczytane informacje z nowo zapisanego rejsetru
@@ -372,6 +372,7 @@ class Ui_MainWindow(object):
 			 
     #funkcja odpowiedzialna za porusznie sie serwomechanizmow    		
     def Move_clicked(self):
+        result=0
         try:
 			#pobierz wartosci o ruchu podane przez uzytkownika i zapisz
 			#w odpowienich zmiennych klasy asmin_backend
@@ -380,7 +381,7 @@ class Ui_MainWindow(object):
             Admin_backend.moving.zero=self.positioning_choice.currentText()                   
         except Exception:
             traceback.print_exc()
-            Admin_backend.error_flag=[6]   
+            result=6   
             #jesli aktualnie program nie namesession_ui wykonuje ruchu
         if(Admin_backend.move_deafult_flag[0]==0):
             try:
@@ -395,22 +396,23 @@ class Ui_MainWindow(object):
                 Admin_backend.moving.zero=self.positioning_choice.currentText()
             except Exception:
                 traceback.print_exc()
-                Admin_backend.error_flag=[6]
+                result=6
         #wyswietl informacje o statusie ruchu 
-        if(Admin_backend.error_flag[0]!=6):               
-            Admin_backend.moving.do_move()
+        if(result!=6):               
+            result=Admin_backend.moving.do_move()
         self.msgbox = QMessageBox()
         self.msgbox.setIcon(QMessageBox.Critical)
-        print(Admin_backend.error_flag)
-        if(Admin_backend.error_flag[0]==1):
+        if(result==1):
             self.msgbox.setText("wrong type of message")
-        elif(Admin_backend.error_flag[0]==2):
+        elif(result==2):
              self.msgbox.setText("one of value out of limit")
-        elif(Admin_backend.error_flag[0]==3):
+        elif(result==3):
             self.msgbox.setText("one of value out of limit")
-        elif(Admin_backend.error_flag[0]==5):
+        elif(result==4):
+            self.msgbox.setText("Check connection")
+        elif(result==5):
             self.msgbox.setText("Move Error")
-        elif(Admin_backend.error_flag[0]==6):
+        elif(result==6):
             self.msgbox.setText("Invalid input data")
         else:
             self.msgbox = QMessageBox()
@@ -418,7 +420,7 @@ class Ui_MainWindow(object):
             self.msgbox.setText("Move completed succesful")
             self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         self.msgbox.show()
-        Admin_backend.error_flag[0]=0 
+
     #Callback checkboxu wylacza mozliwosc dodawania swoich wartosci do 
     #ruchu oprocz wspolrzednych    
     def deafult_checkbox_clicked(self , state):
@@ -449,23 +451,25 @@ class Ui_MainWindow(object):
         self.scrollArea2.setWidget(self.responded_messages2)
    
     def previous_callback(self):
-        Admin_backend.button_callbacks.previous_buttton_callback()
+        saved_coor=Admin_backend.button_callbacks.previous_buttton_callback()
+        self.coordination_box_x.setText(str(saved_coor[0]))
+        self.coordination_box_y.setText(str(saved_coor[1]))
 	
     def next_callback(self):
-        Admin_backend.button_callbacks.next_buttton_callback()
+        saved_coor=Admin_backend.button_callbacks.next_buttton_callback()
+        self.coordination_box_x.setText(str(saved_coor[0]))
+        self.coordination_box_y.setText(str(saved_coor[1]))
 	
     def savesession_callback(self):
-        self.window = QMainWindow()
         self.namesession_ui = Namesession.Ui_NameSession_Window()
-        self.namesession_ui.setupUi(self.window)
-        self.window.show()     		
+        self.namesession_ui.setupUi(self.namesession_ui)
+        self.namesession_ui.show()     		
         
         
     def readsession_callback(self):
-        self.window = QMainWindow()
         self.readsession_ui = Session_records.Ui_Session_records_Window()
-        self.readsession_ui.setupUi(self.window)
-        self.window.show()     	
+        self.readsession_ui.setupUi(self.readsession_ui)
+        self.readsession_ui.show()     	
         
         
 			
