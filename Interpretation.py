@@ -123,7 +123,7 @@ class interpretation:
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536
-
+                            msg_temp=str(round(status_register_status_temp[0][0]))+'  '+'pulse/mS'                    
                         else:
                             if(status_register_status_temp[0][1]>60000):
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	

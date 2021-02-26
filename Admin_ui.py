@@ -49,7 +49,7 @@ class Ui_MainWindow(object):
         self.pushButton_5.setObjectName("pushButton_5")
         
         self.pushButton_6 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_6.setGeometry(QtCore.QRect(725, 245, 50, 25))
+        self.pushButton_6.setGeometry(QtCore.QRect(725, 300, 50, 25))
         self.pushButton_6.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         self.pushButton_7.setObjectName("pushButton_7")
 
         self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_8.setGeometry(QtCore.QRect(650, 275, 50, 25))
+        self.pushButton_8.setGeometry(QtCore.QRect(650, 300, 50, 25))
         self.pushButton_8.setObjectName("pushButton_7")
         
         self.pushButton_9 = QtWidgets.QPushButton(self.centralwidget)
@@ -67,6 +67,10 @@ class Ui_MainWindow(object):
         self.pushButton_10 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 120, 25))
         self.pushButton_10.setObjectName("pushButton_7")   
+        
+        self.pushButton_11 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_11.setGeometry(QtCore.QRect(630, 40, 120, 25))
+        self.pushButton_11.setObjectName("pushButton_7")  
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -134,19 +138,19 @@ class Ui_MainWindow(object):
 
 
         self.label_11 = QtWidgets.QLabel(self.centralwidget)
-        self.label_11.setGeometry(QtCore.QRect(120, 245, 80, 25))
+        self.label_11.setGeometry(QtCore.QRect(120, 245, 110, 25))
 
         self.label_12 = QtWidgets.QLabel(self.centralwidget)
-        self.label_12.setGeometry(QtCore.QRect(220, 245, 80, 25))
+        self.label_12.setGeometry(QtCore.QRect(230, 245, 140, 25))
         
         self.label_13 = QtWidgets.QLabel(self.centralwidget)
-        self.label_13.setGeometry(QtCore.QRect(320, 245, 80, 25))
+        self.label_13.setGeometry(QtCore.QRect(380, 245, 140, 25))
 
         self.label_14 = QtWidgets.QLabel(self.centralwidget)
-        self.label_14.setGeometry(QtCore.QRect(420, 245, 80, 25))
+        self.label_14.setGeometry(QtCore.QRect(530, 245, 130, 25))
         
         self.label_15 = QtWidgets.QLabel(self.centralwidget)
-        self.label_15.setGeometry(QtCore.QRect(520, 245, 80, 25))
+        self.label_15.setGeometry(QtCore.QRect(680, 245, 80, 25))
         
         self.label_16 = QtWidgets.QLabel(self.centralwidget)
         self.label_16.setGeometry(QtCore.QRect(10, 245, 80, 25))
@@ -161,22 +165,22 @@ class Ui_MainWindow(object):
         self.coordination_box_x.setGeometry(QtCore.QRect(120, 265, 80, 25))
 		
         self.acceleration_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.acceleration_box_x.setGeometry(QtCore.QRect(220, 265, 80, 25))
+        self.acceleration_box_x.setGeometry(QtCore.QRect(260, 265, 80, 25))
         
         self.decceleration_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.decceleration_box_x.setGeometry(QtCore.QRect(320, 265, 80, 25))
+        self.decceleration_box_x.setGeometry(QtCore.QRect(400, 265, 80, 25))
         
         self.velocity_box_x = QtWidgets.QTextEdit(self.centralwidget)
-        self.velocity_box_x.setGeometry(QtCore.QRect(420, 265, 80, 25))        
+        self.velocity_box_x.setGeometry(QtCore.QRect(540, 265, 80, 25))        
       	
         self.acceleration_box_y = QtWidgets.QTextEdit(self.centralwidget)
-        self.acceleration_box_y.setGeometry(QtCore.QRect(220, 295, 80, 25))
+        self.acceleration_box_y.setGeometry(QtCore.QRect(260, 295, 80, 25))
         
         self.decceleration_box_y = QtWidgets.QTextEdit(self.centralwidget)
-        self.decceleration_box_y.setGeometry(QtCore.QRect(320, 295, 80, 25))
+        self.decceleration_box_y.setGeometry(QtCore.QRect(400, 295, 80, 25))
         
         self.velocity_box_y = QtWidgets.QTextEdit(self.centralwidget)
-        self.velocity_box_y.setGeometry(QtCore.QRect(420, 295, 80, 25))
+        self.velocity_box_y.setGeometry(QtCore.QRect(540, 295, 80, 25))
         
         self.Message_edit = QtWidgets.QTextEdit(self.centralwidget)
         self.Message_edit.setGeometry(QtCore.QRect(375, 55, 100, 25))
@@ -191,7 +195,7 @@ class Ui_MainWindow(object):
         self.unit_choice.setGeometry(QtCore.QRect(50, 25, 50, 25))
         
         self.positioning_choice = QtWidgets.QComboBox(self.centralwidget)
-        self.positioning_choice.setGeometry(QtCore.QRect(520, 275, 100, 25))
+        self.positioning_choice.setGeometry(QtCore.QRect(650, 265, 100, 25))
 
         self.function_choice = QtWidgets.QComboBox(self.centralwidget)
         self.function_choice.setGeometry(QtCore.QRect(125, 25, 100, 25))
@@ -387,12 +391,12 @@ class Ui_MainWindow(object):
             try:
 				#zapisz wczytane uzytkownika informacje o ruchu 
 				#do odpowiednich zmienncyh klasy admin_backend
-                Admin_backend.moving.acceleration_x=int(self.acceleration_box_x.toPlainText())
-                Admin_backend.moving.decceleration_x=int(self.decceleration_box_x.toPlainText())
-                Admin_backend.moving.velocity_x=int(self.velocity_box_x.toPlainText())
-                Admin_backend.moving.acceleration_y=int(self.acceleration_box_y.toPlainText())
-                Admin_backend.moving.decceleration_y=int(self.decceleration_box_y.toPlainText())
-                Admin_backend.moving.velocity_y=int(self.velocity_box_x.toPlainText()) 
+                Admin_backend.moving.acceleration_x=round(163.84*int(self.acceleration_box_x.toPlainText()))
+                Admin_backend.moving.decceleration_x=round(163.84*int(self.decceleration_box_x.toPlainText()))
+                Admin_backend.moving.velocity_x=round(2730*int(self.velocity_box_x.toPlainText()))
+                Admin_backend.moving.acceleration_y=round(163.84*int(self.acceleration_box_y.toPlainText()))
+                Admin_backend.moving.decceleration_y=round(163.84*int(self.decceleration_box_y.toPlainText()))
+                Admin_backend.moving.velocity_y=round(2730*int(self.velocity_box_x.toPlainText()))
                 Admin_backend.moving.zero=self.positioning_choice.currentText()
             except Exception:
                 traceback.print_exc()
@@ -449,6 +453,8 @@ class Ui_MainWindow(object):
         self.vbox2.addWidget(object)	
         self.responded_messages2.setLayout(self.vbox2)			
         self.scrollArea2.setWidget(self.responded_messages2)
+        
+
    
     def previous_callback(self):
         saved_coor=Admin_backend.button_callbacks.previous_buttton_callback()
@@ -470,7 +476,14 @@ class Ui_MainWindow(object):
         self.readsession_ui = Session_records.Ui_Session_records_Window()
         self.readsession_ui.setupUi(self.readsession_ui)
         self.readsession_ui.show()     	
-        
+    
+    def error_reset_callback(self):
+        result=Admin_backend.button_callbacks.error_reset()
+        if(result!=0): 
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)        
+            self.msgbox.setText("Reset error")
+
         
 			
 
@@ -483,9 +496,9 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(self.Home_window)
         self.pushButton_2.setText(_translate("MainWindow", "Save point"))
         self.pushButton_2.clicked.connect(self.savepoint_callback)
-        self.pushButton_3.setText(_translate("MainWindow", "previous"))
+        self.pushButton_3.setText(_translate("MainWindow", "Previous"))
         self.pushButton_3.clicked.connect(self.previous_callback)
-        self.pushButton_4.setText(_translate("MainWindow", "next"))
+        self.pushButton_4.setText(_translate("MainWindow", "Next"))
         self.pushButton_4.clicked.connect(self.next_callback)
         self.pushButton_5.setText(_translate("MainWindow", "Send"))
         self.pushButton_5.clicked.connect(self.send_message)
@@ -493,12 +506,14 @@ class Ui_MainWindow(object):
         self.pushButton_6.clicked.connect(self.Test_clicked)
         self.pushButton_7.setText(_translate("MainWindow", "Save session"))
         self.pushButton_7.clicked.connect(self.savesession_callback)
-        self.pushButton_8.setText(_translate("MainWindow", "move"))
+        self.pushButton_8.setText(_translate("MainWindow", "Move"))
         self.pushButton_8.clicked.connect(self.Move_clicked)
         self.pushButton_9.setText(_translate("MainWindow", "Registers_status"))
         self.pushButton_9.clicked.connect(self.Register_window)
         self.pushButton_10.setText(_translate("MainWindow", "Read Session"))
         self.pushButton_10.clicked.connect(self.readsession_callback)
+        self.pushButton_11.setText(_translate("MainWindow", "Reset Error"))
+        self.pushButton_11.clicked.connect(self.error_reset_callback)
         self.positioning_choice.addItems(Admin_backend.Positioning_values)
         self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)
@@ -515,12 +530,12 @@ class Ui_MainWindow(object):
         self.label_6.setText(_translate("MainWindow", "Message:"))
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
         self.label_9.setText(_translate("MainWindow", " "))
-        self.label_11.setText(_translate("MainWindow", "Position:"))
-        self.label_12.setText(_translate("MainWindow", "Acceleration:"))
-        self.label_13.setText(_translate("MainWindow", "Deceleration:"))
-        self.label_14.setText(_translate("MainWindow", "Velocity:"))
-        self.label_15.setText(_translate("MainWindow", "zero:"))
-        self.label_16.setText(_translate("MainWindow", "deafult:"))
+        self.label_11.setText(_translate("MainWindow", "Position(inc):"))
+        self.label_12.setText(_translate("MainWindow", "Acceleration(rp/s^2):"))
+        self.label_13.setText(_translate("MainWindow", "Deceleration(rp/s^2):"))
+        self.label_14.setText(_translate("MainWindow", "Velocity(rpm):"))
+        self.label_15.setText(_translate("MainWindow", "Zero:"))
+        self.label_16.setText(_translate("MainWindow", "Deafult:"))
         self.DigitalClock.setStyleSheet('background-color: black',)
         self.Register_window()
 

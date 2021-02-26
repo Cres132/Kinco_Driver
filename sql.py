@@ -318,16 +318,16 @@ class Adress:
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Machine_status', 'locked','0','0'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Operation_modes', 'locked','0','0'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','0','100000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity_trap', 'int','0','140000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Accelaration', 'int','0','8193'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Decelaration', 'int','0','8193'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_velocity', 'int','0','140000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity_trap', 'int','0','136500'))#50RPM
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Accelaration', 'int','0','8193'))#50rps/s^2
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Decelaration', 'int','0','8193'))#50rps/s^2
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_velocity', 'int','0','136500'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_current', 'int','0','100'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_current', 'int','0','1000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity', 'int','0','100'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_methods', 'int','0' ,'35'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity', 'int','0','140000'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity_n', 'int','0','140000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity', 'int','0','136500'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity_n', 'int','0','136500'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_acceleration', 'int','0','8193'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_offset', 'int','0','100000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_fol_err', 'int','0','100000'))

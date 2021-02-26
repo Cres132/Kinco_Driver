@@ -16,8 +16,8 @@ Max_Homing_velocity=100
 Max_Homing_velocity_n=50
 Max_Homing_acceleration=100
 Max_Homing_offset=10
-deafult_acceleration=1000  #50 rp/s^2 nie
-deafult_decceleration=100  #50 rp/s^2 nie
+deafult_acceleration=819 #50 rp/s^2 
+deafult_decceleration=819  #50 rp/s^2 
 deafult_velocity=13650   #50RPM
 deafult_zero="Absolute"
 

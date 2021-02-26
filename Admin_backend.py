@@ -6,10 +6,12 @@ import serial
 import traceback
 import Interpretation
 import Constants
-import threading
+import Current_position
 from PyQt5.QtCore import QDate, QTime
+from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
+
 
 #zmienne uzywane do sprawdzania poprawnosci wysylanych widomosci
 function_value = ''
@@ -42,6 +44,8 @@ start_position=0
 Position_save_info=[]
 Saved_points=[]
 current_point=0
+window1=0
+currentPosition_ui=0
 #klasa odpopwiadajaca za komunikacje sie z serwomechanizmami
 class message_sending(Interpretation.interpretation):
     #okresla wartosc komunikacji po moodbusie dla funkcji
@@ -348,7 +352,10 @@ class moving:
     print(position_x,acceleration_y,zero)
     #funkcja ktora powoduje przypisanie wartosci podanych przez uzytkownika
     # i uruchamia funkcje poruszajaca serwomechanizmami
-    def do_move():    
+    def do_move():  
+        global currentPosition_ui            
+        currentPosition_ui = Current_position.Ui_current_position_window()
+        currentPosition_ui.setupUi(currentPosition_ui)      
         move_allowance[0]=0    
         position_x=moving.position_x 
         acceleration_x=moving.acceleration_x
@@ -390,6 +397,8 @@ class moving:
     
     #funkcja testujaca czy serwomechanizm porusza sie poprawnie        
     def do_test():
+        currentPosition_ui = Current_position.Ui_current_position_window()
+        currentPosition_ui.setupUi(currentPosition_ui)      
 		#wykorzystuje domyslne wartosci ruchu 
         position_x=0
         move_allowance[0]=0
@@ -554,7 +563,7 @@ class moving:
     #funkcja sprawdzajaca czy ruch wykonywany jest poprawnie    
         
     def execute_check(Unit,position,zero):
-        try:
+        try:      
 			#pobierz wartosc startowa i stworz zmienne tymczasowe
             global start_position
             currentposition=0
@@ -562,7 +571,7 @@ class moving:
             positions_list=[]
             Interpretation.position_check=[0]
             target_positon=0
-            #ustal pozycje docelowa
+            #ustal pozycje docelowa       
             if(zero=='Relative'):
                 target_position=position+start_position
             else:
@@ -574,8 +583,13 @@ class moving:
                 message_sending.Register="Position"
                 message_sending.Unit=str(Unit)
                 result=message_sending.read_register() 
-                current_position=Interpretation.position_check[0]     
+                current_position=Interpretation.position_check[0]
+                if Unit==1:
+                    Current_position.movement1.append(current_position)
+                else:
+                    Current_position.movement2.append(current_position)  
                 print(current_position)
+
                 #jesli polozenia zgadza sie z docelowym podnies flage
                 #i zakoncz petle odpytywania.
                 if(result!=0):
@@ -586,14 +600,14 @@ class moving:
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06" 
                     message_sending.write_register() 
-                    return 4                
-					
-					
-                if(current_position==target_position):
+                    return 4               
+							
+                if(current_position==target_position):                    
                     message_sending.write_register()
                     check_moving[0]=1                                 
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=0
+                    currentPosition_ui.show()
                     return 0
 
                 #jesli pozycja sie powtarza i dana pozycja nie jest docelowa 
@@ -617,22 +631,53 @@ class moving:
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=1 
                     return 5
-                else:									
-                    positions_list.append(current_position)
-                    time.sleep(0.1)   
+                else:                    						
+                    positions_list.append(current_position)  
+                    time.sleep(0.1)
         except Exception:
 			# W razie bledu wylacz silnik i wyrzuc blad
             traceback.print_exc()
             message_sending.Register="Machine_status"
             message_sending.Unit=str(Unit) 
             message_sending.message="0x06"   
-            message_sending.write_register()             
+            result=message_sending.write_register()             
             ending_position[unit_choice]=current_position
             move_allowance[0]=1 
             return 5
   
 class button_callbacks:
-	
+    def error_reset():
+        unit_choice=0
+        message_sending.Register="Sim_dig_in"
+        message_sending.Unit=1 
+        message_sending.message="2"   
+        result=message_sending.write_register()        
+        if result!=0:
+            return result 
+        message_sending.Register="Sim_dig_in"
+        message_sending.Unit=1
+        message_sending.message="0"   
+        result=message_sending.write_register()        
+        if result!=0:
+            return result   
+        return 0  
+        unit_choice=1            
+        message_sending.Register="Sim_dig_in"
+        message_sending.Unit=2 
+        message_sending.message="2"   
+        result=message_sending.write_register()        
+        if result!=0:
+            return result 
+        message_sending.Register="Sim_dig_in"
+        message_sending.Unit=2
+        message_sending.message="0"   
+        result=message_sending.write_register()        
+        if result!=0:
+            return result   
+        return 0        
+
+		
+			
     def savepoint_button_callback():
         global unit_choice
         global Position_save_info
