@@ -7,6 +7,7 @@ import Admin_backend
 import traceback
 import sqlite3
 import sys
+import SessionControl
 
 
 class Ui_Session_records_Window(QWidget):
@@ -45,8 +46,11 @@ class Ui_Session_records_Window(QWidget):
 	#trzeba dodac wiecej zabezpieczen	
     def proceed_callback(self,MainWindow):
         try:
-            self.session_name=self.sessions.currentText()
-            Admin_backend.button_callbacks.readsession_buttton_callback(self.session_name)
+            SessionControl.session_name=self.sessions.currentText()
+            self.ui = SessionControl.Ui_SessionControl_Window()
+            self.ui.setupUi(self.ui)
+            self.ui.show()     		
+        
             self.close()
         except Exception:
             traceback.print_exc()
@@ -71,13 +75,13 @@ class Ui_Session_records_Window(QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Choose session"))
 	    
-        self.label.setText(_translate("MainWindow", "Choose name of session to read"))
-        self.pushButton_1.setText(_translate("MainWindow", "exit"))
+        self.label.setText(_translate("MainWindow", "Choose  session to Open"))
+        self.pushButton_1.setText(_translate("MainWindow", "Exit"))
         self.pushButton_1.clicked.connect(self.close)	  
 	      
-        self.pushButton_2.setText(_translate("MainWindow", "proceed"))
+        self.pushButton_2.setText(_translate("MainWindow", "Open"))
         self.pushButton_2.clicked.connect(self.proceed_callback)
-        
+                
         self.sessions.currentTextChanged.connect(self.session_selected)
        
 #funkcja startowa okna uzywana do testowania

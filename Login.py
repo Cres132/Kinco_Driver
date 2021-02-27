@@ -21,7 +21,7 @@ class window(QWidget):
     def new_window2(self):
         self.window = QMainWindow()
         self.ui = Ui_GuestWindow()
-        self.ui.setup_guest_Ui(self.window)
+        self.ui.setupUi(self.window)
         self.window.show()
         
     #funkcja odpowiadajca za sprawdzenie loginu w bazie danych

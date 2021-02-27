@@ -10,6 +10,7 @@ import Register_window
 import traceback
 import Namesession
 import Session_records
+import Current_position
 
 #klasa odpowiedzialna za tworzenia okna admina 
 class Ui_MainWindow(object):
@@ -65,13 +66,17 @@ class Ui_MainWindow(object):
         self.pushButton_9.setObjectName("pushButton_7")        
         
         self.pushButton_10 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 120, 25))
+        self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 130, 25))
         self.pushButton_10.setObjectName("pushButton_7")   
         
         self.pushButton_11 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_11.setGeometry(QtCore.QRect(630, 40, 120, 25))
+        self.pushButton_11.setGeometry(QtCore.QRect(630, 40, 130, 25))
         self.pushButton_11.setObjectName("pushButton_7")  
 
+        self.pushButton_12 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_12.setGeometry(QtCore.QRect(630, 70, 130, 25))
+        self.pushButton_12.setObjectName("pushButton_7") 
+        
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
         self.scrollArea.setWidgetResizable(True)
@@ -483,6 +488,12 @@ class Ui_MainWindow(object):
             self.msgbox = QMessageBox()
             self.msgbox.setIcon(QMessageBox.Critical)        
             self.msgbox.setText("Reset error")
+            
+    def session_movement_callback(self):        
+        self.currentPosition_ui = Current_position.Ui_current_position_window()
+        self.currentPosition_ui.setupUi(self.currentPosition_ui)
+        self.currentPosition_ui.show()   
+
 
         
 			
@@ -514,6 +525,8 @@ class Ui_MainWindow(object):
         self.pushButton_10.clicked.connect(self.readsession_callback)
         self.pushButton_11.setText(_translate("MainWindow", "Reset Error"))
         self.pushButton_11.clicked.connect(self.error_reset_callback)
+        self.pushButton_12.setText(_translate("MainWindow", "Session Movement"))
+        self.pushButton_12.clicked.connect(self.session_movement_callback)
         self.positioning_choice.addItems(Admin_backend.Positioning_values)
         self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)

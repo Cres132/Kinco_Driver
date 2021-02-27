@@ -5,12 +5,13 @@ from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
 import Admin_backend
 import traceback
+import pylab
+
 
 movement1=[]	
 movement2=[]
 
-class Ui_current_position_window(QWidget):
-	     
+class Ui_current_position_window(QWidget):     
     
     #tworzenie obiektow okna rejsetrow 
     def setupUi(self, Widget):
@@ -36,51 +37,57 @@ class Ui_current_position_window(QWidget):
         self.pushButton_2.setObjectName("pushButton_7")        
 
         self.retranslateUi(Widget)
-        QtCore.QMetaObject.connectSlotsByName(Widget)
-        
-    def save_position(self,unit,curpos):
-        try:
-            if unit==1:
-                movement1.append(curpos)
-            else:
-                movement2.append(curpos)
-        except Exception:
-            self.label.SetText(Exception)
-    
+        QtCore.QMetaObject.connectSlotsByName(Widget)      
+   
 
     
     def deafult_callback(self,event): 
         self.close()
  	
-    def save_name_callback(self,event):
-        try:      
- 
+    def open_movement_window_callback(self,event):
+        try:
+            x=[]
+            iter1=0
+            if self.units.currentText()=="Unit 1":
+                while iter1<len(movement1):
+                    iter1=iter1+1
+                    x.append(iter1*0.1)
+                pylab.plot(x,movement1)
+                pylab.title("Unit 1 Movement")
+                pylab.grid(True)
+                pylab.show()
+            else:
+                while iter1<len(movement2):
+                    iter1=iter1+1
+                    x.append(iter1*0.1)                    
+                pylab.plot(x,movement2)
+                pylab.title("Unit 2 Movement")
+                pylab.grid(True)
+                pylab.show()
             self.close()
-
         except Exception:
-            session_name=" "
-            Admin_backend.button_callbacks.savesession_buttton_callback(session_name) 
-            self.close()
+            traceback.print_exc()
+
 			
     def retranslateUi(self, Widget):		
         _translate = QtCore.QCoreApplication.translate
-        Widget.setWindowTitle(_translate("Widget", "watch movement"))
-        self.units.addItem("Unit1")
-        self.units.addItem("Unit2")
+        Widget.setWindowTitle(_translate("Widget", "Watch movement"))
+        self.units.addItem("Unit 1")
+        self.units.addItem("Unit 2")
         self.label.setText(_translate("Widget", "Choose unit to track movement"))
         
         self.pushButton_1.setText(_translate("Widget", "exit"))
         self.pushButton_1.clicked.connect(self.deafult_callback)	  
 	      
-        self.pushButton_2.setText(_translate("MWidget", "display"))
-        self.pushButton_2.clicked.connect(self.save_name_callback)
+        self.pushButton_2.setText(_translate("Widget", "display"))
+        self.pushButton_2.clicked.connect(self.open_movement_window_callback)
        
 #funkcja startowa okna uzywana do testowania
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle(QStyleFactory.create('Fusion'))
-    ui=Ui_NameSession_Window()
+    ui=Ui_current_position_window()
     ui.setupUi(ui)
     ui.show()
     sys.exit(app.exec_())

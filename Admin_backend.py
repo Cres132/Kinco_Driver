@@ -396,9 +396,7 @@ class moving:
         return 0
     
     #funkcja testujaca czy serwomechanizm porusza sie poprawnie        
-    def do_test():
-        currentPosition_ui = Current_position.Ui_current_position_window()
-        currentPosition_ui.setupUi(currentPosition_ui)      
+    def do_test():  
 		#wykorzystuje domyslne wartosci ruchu 
         position_x=0
         move_allowance[0]=0
@@ -584,7 +582,7 @@ class moving:
                 message_sending.Unit=str(Unit)
                 result=message_sending.read_register() 
                 current_position=Interpretation.position_check[0]
-                if Unit==1:
+                if Unit!=1:
                     Current_position.movement1.append(current_position)
                 else:
                     Current_position.movement2.append(current_position)  
@@ -607,7 +605,6 @@ class moving:
                     check_moving[0]=1                                 
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=0
-                    currentPosition_ui.show()
                     return 0
 
                 #jesli pozycja sie powtarza i dana pozycja nie jest docelowa 
@@ -674,7 +671,7 @@ class button_callbacks:
         result=message_sending.write_register()        
         if result!=0:
             return result   
-        return 0        
+        return 0       
 
 		
 			
@@ -745,8 +742,6 @@ class button_callbacks:
         print(command)
         cur.execute(command)
         print(command)
-        
-    def readsession_buttton_callback(title):    
-        print(title)
+
         
 		
