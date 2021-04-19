@@ -7,11 +7,13 @@ import traceback
 import Interpretation
 import Constants
 import Current_position
-from PyQt5.QtCore import QDate, QTime
+import threading
+import Check_move_Window
+from PyQt5.QtCore import QDate, QTime,QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
-
+from timeit import default_timer as timer
 
 #zmienne uzywane do sprawdzania poprawnosci wysylanych widomosci
 function_value = ''
@@ -40,12 +42,14 @@ Positioning_values=["Absolute","Relative"]
 move_allowance=[0]
 #zmienna mowiaca o wartosci poczatkowej ruchu
 start_position=0
+start=0
 #tablica zapisujaca wspolrzedne do zapisania polozenia
 Position_save_info=[]
 Saved_points=[]
 current_point=0
 window1=0
 currentPosition_ui=0
+stop_thread=0
 #klasa odpopwiadajaca za komunikacje sie z serwomechanizmami
 class message_sending(Interpretation.interpretation):
     #okresla wartosc komunikacji po moodbusie dla funkcji
@@ -80,7 +84,7 @@ class message_sending(Interpretation.interpretation):
         for adr in fun:
             if (adr['class']=='RO' or adr['class']=='RW'):
                 count_r=adr['count'] 
-                print(adr['name'])	           
+                print(adr['name'])           
                 Register_adress=adr['adress']
                 adresstemp=int(Register_adress, 16)
                 try:
@@ -161,7 +165,7 @@ class message_sending(Interpretation.interpretation):
                     Register_adress=adr['adress']
                     Register_class=adr['class']
                     Register_name_temp=adr['name']
-                    print(Register_adress,Register_class)
+                    #print(Register_adress,Register_class)
                     count_r=adr['count']
             #rozpocznij transmisje przez modbus
             client=modbusclient(method='RTU',port='/dev/ttyUSB0',timeout=1,stopbits=1,bytesize=8,parity='N',baudrate=19200)
@@ -206,14 +210,14 @@ class message_sending(Interpretation.interpretation):
                 Register_class=adr['class']
                 count_r=adr['count']
                 Register_name_temp=adr['name']
-                print(Register_adress,Register_class)
+              #  print(Register_adress,Register_class)
         #Wczytaj dane podane przez uzytkownika
         message_temp=message_sending.message   
                 #wczytaj flage bledu 
  
-        print(Register_name_temp,message_temp)    
+        #print(Register_name_temp,message_temp)    
         send_allowance=Interpretation.interpretation.interpretsend(Register_name_temp,message_temp)
-        print(Interpretation.interpretation.interpretsend(Register_name_temp,message_temp))
+       # print(Interpretation.interpretation.interpretsend(Register_name_temp,message_temp))
         #wyczysc tablice tlumaczace wczytane rejestry
         Interpretation.Status_registers=[]
         Interpretation.Status_registers_status=[]
@@ -226,6 +230,9 @@ class message_sending(Interpretation.interpretation):
             #mozliwosc podawania wartosci w postacji int i hex
             try:
                 message_temp=int(message_temp)
+                if message_temp<0:
+                    message_temp=message_temp+2**32
+
             except:
                 message_temp=int(message_temp,16)
             try:
@@ -338,8 +345,14 @@ class comboboxes:
                         label_text.append(functions['description'])
     messages_names()
 #klasa odpowidzialna za poruszanie serwomechanizmami
-class moving:
-	#zmienne dla domyslnego ruchu pobrane z pliku Constans
+class moving(QObject):
+    finished = pyqtSignal()
+    progress = pyqtSignal(int)
+    progress2 = pyqtSignal(int)
+    progress3 = pyqtSignal(int)
+    stop_current_thread = pyqtSignal()
+	#zmienne dla domyslnego ruchu pobrane z pliku Constans    
+
     position_x=0
     acceleration_x=Constants.deafult_acceleration
     decceleration_x=Constants.deafult_decceleration
@@ -348,24 +361,24 @@ class moving:
     acceleration_y=Constants.deafult_acceleration
     decceleration_y=Constants.deafult_decceleration
     velocity_y=Constants.deafult_velocity
-    zero="Relative"
-    print(position_x,acceleration_y,zero)
+    #print(position_x,acceleration_y,zero)
     #funkcja ktora powoduje przypisanie wartosci podanych przez uzytkownika
     # i uruchamia funkcje poruszajaca serwomechanizmami
-    def do_move():  
-        global currentPosition_ui            
+    def do_move(self):
+        print(self)  
+        global currentPosition_ui          
         currentPosition_ui = Current_position.Ui_current_position_window()
         currentPosition_ui.setupUi(currentPosition_ui)      
         move_allowance[0]=0    
-        position_x=moving.position_x 
-        acceleration_x=moving.acceleration_x
-        decceleration_x=moving.decceleration_x
-        velocity_x=moving.velocity_x
-        position_y=moving.position_y
-        acceleration_y=moving.acceleration_y
-        decceleration_y=moving.decceleration_y
-        velocity_y=moving.velocity_y
-        zero=moving.zero	
+        position_x=self.position_x 
+        acceleration_x=self.acceleration_x
+        decceleration_x=self.decceleration_x
+        velocity_x=self.velocity_x
+        position_y=self.position_y
+        acceleration_y=self.acceleration_y
+        decceleration_y=self.decceleration_y
+        velocity_y=self.velocity_y
+        zero=self.zero	
         if(move_deafult_flag[0]==1):             
             acceleration_x=Constants.deafult_acceleration
             decceleration_x=Constants.deafult_decceleration
@@ -377,26 +390,29 @@ class moving:
         #jesli serwomechanizm nie wykonuje ruchu wykonaj ruch najpierw
         #jednego serwomechanizmu nastepnie drugiego
         if(move_allowance[0]==0 ):
-            result=moving.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
+            result=self.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):           
-                result2=moving.execute_check(0,position_x,zero)
+
+                result2=self.execute_check(0,position_x,zero)
                 if(result2!=0):
                     return result2
             else:
                 print(result)
                 return result 
         if(move_allowance[0]==0 ):
-            result=moving.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
+            result=self.do_single_move(position_y,acceleration_y,decceleration_y,velocity_y,1,zero)
             if(result==0):            
-                result2=moving.execute_check(1,position_y,zero)
+                result2=self.execute_check(1,position_y,zero)
                 if(result2!=0):
                     return result2
             else:
                 return result 
+        self.progress.emit(result)
+        self.finished.emit()	
         return 0
     
     #funkcja testujaca czy serwomechanizm porusza sie poprawnie        
-    def do_test():  
+    def do_test(self):  
 		#wykorzystuje domyslne wartosci ruchu 
         position_x=0
         move_allowance[0]=0
@@ -410,59 +426,61 @@ class moving:
         zero=Constants.deafult_zero 
         #test polega na wykonaniu ruchu nastepnie wroceniu na miejsce 
         #pierwotne przez serwomechanizmy
-        if(move_allowance[0]==0):        
-            result=moving.do_single_move("1000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            if(result==0):  
-                result2=moving.execute_check(1,1000,zero)
-                if(result2!=0):
-                    return result2 
+        iter1=0
+        while iter1<=100:
+            iter1=iter1+1;
+            print(iter1)
+            if(move_allowance[0]==0):        
+                result=self.do_single_move("-50" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+                if(result==0):  
+                    result2=self.execute_check(0,-50,zero)
+                    if(result2!=0):
+                        self.progress.emit(result2)
+                        self.finished.emit()
+                        return result2 
+                else:
+                    self.progress.emit(result)
+                    self.finished.emit()					
+                    return result
             else:
-                return result
-        else:
-            print("error asd")
-        
+                print("error asd")       
+              
         if(move_allowance[0]==0):        
-            result=moving.do_single_move("1000" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            if(result==0):            
-                result2=moving.execute_check(2,1000,zero)
-                if(result2!=0):
-                    return result2 
-            else:
-                return result             
-        else:
-            print("error asd2")
-        
-        if(move_allowance[0]==0):        
-            result=moving.do_single_move("0" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+            result=self.do_single_move("5000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):                  
-                 result2=moving.execute_check(1,0,zero)
-                 if(result2!=0):
+                result2=self.execute_check(0,5000,zero)
+                if(result2!=0):
+                    self.progress.emit(result2)
+                    self.finished.emit()					
                     return result2 
             else:
+                self.progress.emit(result)
+                self.finished.emit()                   
                 return result   
         else:
-            print("error asd3")
+             print("error asd3")
         
-        if(move_allowance[0]==0):        
-            result=moving.do_single_move("0" ,acceleration_y,decceleration_y,velocity_y,1,zero)
-            if(result==0):
-                result2=moving.execute_check(2,0,zero)
-                if(result2!=0):
-                    return result2 
-            else:
-                return result       
-        else:
-            print("error asd4")			
         print("przetestowane",move_allowance)
+        self.progress.emit(result)
+        self.finished.emit()	
         return 0
     #funkcja wykonujaca ruch    
-    def do_single_move(target,acceleration,decceleration,velocity,unit,zero):
+    def do_single_move(self,target,acceleration,decceleration,velocity,unit,zero):
         try:
+            print(zero)			
 			#wczytaj zmienne globalne dotyczace wyboru serwomechanizmu i
 			#pozycji startowej
+            global start
             global unit_choice
             unit_choice=int(unit)
             global start_position
+            global stop_thread
+            if stop_thread==1:
+                move_allowance[0]=1
+                self.progress.emit(5)
+                self.finished.emit()
+                return 5
+				
             #wczytaj pozycje serwomechanizmu
             message_sending.Register="Position"
             message_sending.Unit=str(Unit)
@@ -474,13 +492,18 @@ class moving:
             message_sending.message="1"
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()  
                 return result
             #wlacz silniki serwomechanizmu
             message_sending.Register="Machine_status"        
             message_sending.Unit=str(unit) 
+
             message_sending.message="0x0F"
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()				
                 return result        
             #okresl pozycje docelowa   
             message_sending.Register="Target_position"
@@ -488,6 +511,8 @@ class moving:
             message_sending.message=str(target)
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()
                 return result
             #ustaw maksymalna predkosc
             message_sending.Register="Max_velocity_trap"
@@ -495,6 +520,8 @@ class moving:
             message_sending.message=str(velocity)            
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()
                 return result
             #ustaw maksymalne przyspieszenie
             message_sending.Register="Max_Accelaration"
@@ -502,6 +529,8 @@ class moving:
             message_sending.message=str(acceleration)
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()
                 return result
             #ustaw maksymalne przyspieszenie hamowania
             message_sending.Register="Max_Decelaration"
@@ -509,26 +538,42 @@ class moving:
             message_sending.message=str(decceleration)
             result=message_sending.write_register()
             if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()
                 return result
-            print(zero)
+                           
+            message_sending.Register="Position"
+            message_sending.Unit=str(unit)
+            result=message_sending.read_register() 
+            current_position=Interpretation.position_check[0]            
+            if(result!=0):
+                self.progress.emit(result)
+                self.finished.emit()			
+                return result
+            
             if(zero=="Absolute"):
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
 				#z zerem absolutnym
+                print("tutaj")              
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x2F"
                 result=message_sending.write_register()
+
                 if(result!=0):
-                   move_allowance[0]=1
-                   return result
+                    self.progress.emit(result)
+                    self.finished.emit()
+                    return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x3F"
                 result=message_sending.write_register()
+             
                 if(result!=0):
-                   move_allowance[0]=1
-                   return result
+                    self.progress.emit(result)
+                    self.finished.emit()
+                    return result
             else:
 				#ustaw serwomechanizm w stan rozpoczecia pozycjonowania 
 				#z zerem absolutnym relatywnym
@@ -537,16 +582,40 @@ class moving:
                 message_sending.message="0x4F"
                 result=message_sending.write_register()
                 if(result!=0):
+                   self.progress.emit(result)
+                   self.finished.emit()					
                    return result
                 # wykonaj pozycjonowanie
                 message_sending.Register="Machine_status"
                 message_sending.Unit=str(unit) 
                 message_sending.message="0x5F"
-                result=message_sending.write_register()
+                result=message_sending.write_register()               
+               
                 if(result!=0):
-                   return result
+                    self.progress.emit(result)
+                    self.finished.emit()					
+                    return result
             #ppodnies flage wykonywania ruchu
             move_allowance[0]=1
+            self.progress3.emit(unit)
+            if unit!=1:                				
+                if not Current_position.time1:
+                    start=timer()
+                    Current_position.time1.append(0)
+                    Current_position.movement1.append(current_position)
+                else:
+                    start=timer()-Current_position.time1[-1]
+                    Current_position.time1.append(Current_position.time1[-1])
+                    Current_position.movement1.append(current_position)  
+            else:
+                if not Current_position.time2:
+                    start=timer()
+                    Current_position.time2.append(0)
+                    Current_position.movement2.append(current_position)
+                else:
+                    start=timer()-Current_position.time2[-1]-1
+                    Current_position.time2.append(Current_position.time2[-1])
+                    Current_position.movement2.append(current_position)        					
         except Exception:
 			#w wypadku bledu wylacz silnik i wyrzuc blad
             traceback.print_exc()
@@ -556,14 +625,26 @@ class moving:
             message_sending.write_register()             
             ending_position[unit_choice]=start_position
             move_allowance[0]=1 
+            print("error1")
+            self.progress.emit(5)
+            self.finished.emit()
             return 5
         return 0            
     #funkcja sprawdzajaca czy ruch wykonywany jest poprawnie    
         
-    def execute_check(Unit,position,zero):
-        try:      
+    def execute_check(self,Unit,position,zero):
+        print(self)
+        try:
+            global stop_thread
+            if stop_thread==1:
+                move_allowance[0]=1
+                self.progress.emit(5)
+                self.finished.emit()
+                return 5 
+            iter3=0			     
 			#pobierz wartosc startowa i stworz zmienne tymczasowe
             global start_position
+            
             currentposition=0
             check_moving=[0]
             positions_list=[]
@@ -574,63 +655,101 @@ class moving:
                 target_position=position+start_position
             else:
                 target_position=position
-            print(Unit)
             #dopoki serwomechanizm nie poruszy sie do punktu docelowego
             #sprawdzaj jego polozenie co 100ms
             while(check_moving[0]==0):
+                if stop_thread==1:
+                     move_allowance[0]=1
+                     self.progress.emit(5)
+                     self.finished.emit()
+                     return 5 
                 message_sending.Register="Position"
                 message_sending.Unit=str(Unit)
                 result=message_sending.read_register() 
                 current_position=Interpretation.position_check[0]
-                if Unit!=1:
-                    Current_position.movement1.append(current_position)
-                else:
-                    Current_position.movement2.append(current_position)  
                 print(current_position)
+                self.progress2.emit(int(current_position))
+                if Unit!=1:
+                    end=timer()
+                    Current_position.movement1.append(current_position)
+                    Current_position.time1.append(end-start)
+                else:
+                    end=timer()					
+                    Current_position.movement2.append(current_position) 
+                    Current_position.time2.append(end-start) 
+
 
                 #jesli polozenia zgadza sie z docelowym podnies flage
                 #i zakoncz petle odpytywania.
                 if(result!=0):
                     check_moving[0]=1               
                     ending_position[unit_choice]=current_position
-                    move_allowance[0]=0
+                    move_allowance[0]=1                    
                     message_sending.Register="Machine_status"
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06" 
-                    message_sending.write_register() 
+                    message_sending.write_register()                    
+                    print("error2") 
+                    self.progress.emit(5)
+                    self.finished.emit()                  
                     return 4               
 							
-                if(current_position==target_position):                    
+                if(abs(current_position-target_position)<10): 
+                 
                     message_sending.write_register()
+                    print(current_position)
+                    if Unit!=1:
+                        end=timer()
+                        Current_position.movement1.append(current_position)
+                        Current_position.time1.append(end-start)
+                    else:
+                        end=timer()					
+                        Current_position.movement2.append(current_position) 
+                        Current_position.time2.append(end-start) 
+                    
+
                     check_moving[0]=1                                 
                     ending_position[unit_choice]=current_position
+                    if stop_thread==1:
+                         move_allowance[0]=1
+                         self.progress.emit(5)
+                         self.finished.emit()
+                         return 5 
                     move_allowance[0]=0
+                    time.sleep(0.5)
                     return 0
 
                 #jesli pozycja sie powtarza i dana pozycja nie jest docelowa 
                 #czyli gdy serwomechanizm sie nie porusza wyrzuc blad    
-                if(current_position in positions_list and current_position!=target_position):
-                    message_sending.Register="Machine_status"
-                    message_sending.Unit=str(Unit) 
-                    message_sending.message="0x06" 
-                    message_sending.write_register()
-                    check_moving[0]=1               
-                    ending_position[unit_choice]=current_position
-                    move_allowance[0]=0                              
-                    return 5
+                if(current_position in positions_list and current_position!=target_position): 
+                    iter3=iter3+1
+                    if iter3==50:
+                        message_sending.Register="Machine_status"
+                        message_sending.Unit=str(Unit) 
+                        message_sending.message="0x06" 
+                        message_sending.write_register()
+                        check_moving[0]=1               
+                        ending_position[unit_choice]=current_position
+                        move_allowance[0]=1  
+                        print("error3")                            
+                        self.progress.emit(5)
+                        self.finished.emit()
+                        return 5
                 #jesli uklad wykonuje ruch przez ponad 15 sekund program przerywa ruch i 
                 #wyrzuca blad mozna usunac jeesli bedzie zbedne    
-                elif(len(positions_list)>150):				
+                elif(len(positions_list)>5000):				
                     message_sending.Register="Machine_status"
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06"   
                     message_sending.write_register()             
                     ending_position[unit_choice]=current_position
                     move_allowance[0]=1 
+                    self.progress.emit(5)
+                    self.finished.emit()                   
                     return 5
                 else:                    						
                     positions_list.append(current_position)  
-                    time.sleep(0.1)
+                    time.sleep(0.01)
         except Exception:
 			# W razie bledu wylacz silnik i wyrzuc blad
             traceback.print_exc()
@@ -640,38 +759,33 @@ class moving:
             result=message_sending.write_register()             
             ending_position[unit_choice]=current_position
             move_allowance[0]=1 
+            print("error4")
+            self.progress.emit(5)
+            self.finished.emit()           
             return 5
   
 class button_callbacks:
     def error_reset():
-        unit_choice=0
-        message_sending.Register="Sim_dig_in"
-        message_sending.Unit=1 
-        message_sending.message="2"   
-        result=message_sending.write_register()        
-        if result!=0:
-            return result 
-        message_sending.Register="Sim_dig_in"
-        message_sending.Unit=1
-        message_sending.message="0"   
-        result=message_sending.write_register()        
-        if result!=0:
-            return result   
-        return 0  
-        unit_choice=1            
-        message_sending.Register="Sim_dig_in"
-        message_sending.Unit=2 
-        message_sending.message="2"   
-        result=message_sending.write_register()        
-        if result!=0:
-            return result 
-        message_sending.Register="Sim_dig_in"
-        message_sending.Unit=2
-        message_sending.message="0"   
-        result=message_sending.write_register()        
-        if result!=0:
-            return result   
-        return 0       
+        global unit_choice
+        global Unit
+        iter1=0
+        for a in Unit:
+            unit_choice=iter1
+            iter1=iter1+1
+            message_sending.Register="Sim_dig_in"
+            message_sending.Unit=1 
+            message_sending.message="2"   
+            result=message_sending.write_register()        
+            if result!=0:
+                return result 
+            message_sending.Register="Sim_dig_in"
+            message_sending.Unit=1
+            message_sending.message="0"   
+            result=message_sending.write_register()        
+            if result!=0:
+                print(result)
+                return result
+       
 
 		
 			
@@ -684,9 +798,11 @@ class button_callbacks:
         message_sending.Register="Position"
         unit_choice=0
         message_sending.read_register() 
+        
         Position_save_info.append(Interpretation.position_check[0])
         Interpretation.position_check=[0]
         message_sending.Register="Position"
+        
         unit_choice=1
         message_sending.read_register() 
         Position_save_info.append(Interpretation.position_check[0])
@@ -706,6 +822,7 @@ class button_callbacks:
                 ycoordinate varchar(250)  NOT NULL,
                 date date NOT NULL,
                 time varchar(250) NOT NULL
+
                 )""")
         cur.execute('INSERT INTO tempsession VALUES(NULL,?, ?, ?, ?);', (str(Position_save_info[0]), str(Position_save_info[1]), nowt,timet))
         con.commit()
@@ -742,6 +859,68 @@ class button_callbacks:
         print(command)
         cur.execute(command)
         print(command)
+    
+    def motors_off():
+        global unit_choice
+        global Unit
+        iter1=0
+        for a in Unit:            
+            unit_choice=iter1
+            iter1=iter1+1
+            message_sending.Register="Machine_status"
+            message_sending.Unit=iter1+1
+            message_sending.message="0x06"  
+            result=message_sending.write_register()        
+       
+    def Zero_current():
+        global unit_choice
+        global Unit
+        iter1=0
+        for a in Unit:
+            print(iter1)
+            unit_choice=iter1
+            
+            message_sending.Register="Homing_acceleration"
+            message_sending.message="10"
+            result=message_sending.write_register()
+            if(result!=0):
+               return result          
+            
+            
+            message_sending.Register="Homing_velocity"
+            message_sending.message="10"
+            result=message_sending.write_register()
+            if(result!=0):
+               return result 
+                    
+            message_sending.Register="Operation_modes"
+            message_sending.message="6"
+            result=message_sending.write_register()
+            if(result!=0):
+               return result 
 
-        
-		
+            message_sending.Register="Sim_dig_in"
+            message_sending.Unit=1 
+            message_sending.message="24"   
+            result=message_sending.write_register()        
+            if result!=0:
+                return result 
+
+            message_sending.Register="Machine_status"
+            message_sending.Unit=1
+            message_sending.message="0x01F"     
+            result=message_sending.write_register()        
+            if result!=0:
+                return result  
+            message_sending.Register="Sim_dig_in"
+            message_sending.Unit=1
+            message_sending.message="0"   
+            result=message_sending.write_register()        
+            if result!=0:
+                return result   
+            
+      
+            if result!=0:
+                return result  
+            iter1=iter1+1;
+     

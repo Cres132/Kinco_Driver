@@ -7,7 +7,8 @@ import Admin_backend
 import traceback
 import pylab
 
-
+time1=[]
+time2=[]
 movement1=[]	
 movement2=[]
 
@@ -46,21 +47,19 @@ class Ui_current_position_window(QWidget):
  	
     def open_movement_window_callback(self,event):
         try:
+            print(time1)
+            print(movement1)
+            print(time2)
+            print(movement2)
             x=[]
             iter1=0
             if self.units.currentText()=="Unit 1":
-                while iter1<len(movement1):
-                    iter1=iter1+1
-                    x.append(iter1*0.1)
-                pylab.plot(x,movement1)
+                pylab.plot(time1,movement1)
                 pylab.title("Unit 1 Movement")
                 pylab.grid(True)
                 pylab.show()
-            else:
-                while iter1<len(movement2):
-                    iter1=iter1+1
-                    x.append(iter1*0.1)                    
-                pylab.plot(x,movement2)
+            else:                    
+                pylab.plot(time2,movement2)
                 pylab.title("Unit 2 Movement")
                 pylab.grid(True)
                 pylab.show()

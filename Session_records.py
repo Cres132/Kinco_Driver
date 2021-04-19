@@ -49,7 +49,7 @@ class Ui_Session_records_Window(QWidget):
             SessionControl.session_name=self.sessions.currentText()
             self.ui = SessionControl.Ui_SessionControl_Window()
             self.ui.setupUi(self.ui)
-            self.ui.show()     		
+            self.ui.show()  		
         
             self.close()
         except Exception:

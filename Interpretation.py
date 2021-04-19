@@ -12,6 +12,7 @@ message_read_allowance=0
 position_check=[0]
 Unit_to_change_name = ' '
 Unit_to_change_value = ' '
+send_allowance=0
 
 #klasa odpowiadajajaca za interpretacje wczytanych rejestrow
 class interpretation:	
@@ -70,9 +71,9 @@ class interpretation:
                                  status_register_status_temp[0][0]=status_register_status_temp[0][0]-65536	
                                  status_register_status_temp[0][1]=status_register_status_temp[0][1]-65536
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536)/2730,3))+'  '+'rpm'
-                            print(status_register_temp)
-                            print(status_register_status_temp[0])
-                            print(msg_temp)
+                            #print(status_register_temp)
+                            #print(status_register_status_temp[0])
+                           # print(msg_temp)
                     elif(inter['message']=='rs'):
                         if(len(status_register_status_temp[0])<2):
                             if(status_register_status_temp[0][0]>60000):
@@ -131,7 +132,7 @@ class interpretation:
                             msg_temp=str(round((status_register_status_temp[0][0]+status_register_status_temp[0][1]*65536),3))+'  '+'pulse/mS'                    
                             
                     elif(inter['message']=='number'):
-                        print("7")
+                        #print("7")
 
                         msg_temp=str(round(status_register_status_temp[0][0],3))+'  '
                     else:
@@ -145,6 +146,7 @@ class interpretation:
     
     def interpretsend(register_name,mess):  
 		#wczytaj lokalna baze danych
+        global send_allowance
         Adress_database = sqlite3.connect('Adress.db')
         Adress_database.row_factory = sqlite3.Row
         Adress_cursor = Adress_database.cursor()
@@ -156,7 +158,10 @@ class interpretation:
         Send_message_type=''
         #zmienna tymczasowa z wysylana wiadomoscia
         message_temp=mess
-        print(register_name,"tutaj")
+        if send_allowance==1:
+            send_allowance=0
+            return 1
+        #print(register_name,"tutaj")
         #wczytaj wartosc limitu dla rejestru do ktorego wysylana jest 
         #wiadomosc
         for register in fun:

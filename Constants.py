@@ -19,5 +19,5 @@ Max_Homing_offset=10
 deafult_acceleration=819 #50 rp/s^2 
 deafult_decceleration=819  #50 rp/s^2 
 deafult_velocity=13650   #50RPM
-deafult_zero="Absolute"
+deafult_zero="Relative"
 

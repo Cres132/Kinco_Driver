@@ -1,8 +1,9 @@
 from digitalclock import DigitalClock
 from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
+from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer,QObject, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
+from time import sleep 
 import Constants
 import Admin_backend
 import Home_window
@@ -11,17 +12,23 @@ import traceback
 import Namesession
 import Session_records
 import Current_position
+import Check_move_Window
+
+check_window=0	
 
 #klasa odpowiedzialna za tworzenia okna admina 
 class Ui_MainWindow(object):
 	#tworzenie zmienncyh tymczasowych
+    current_unit=0
     names_list=[]
     Readed_registers=[]
     Responded_messages_list=[]
     #zakoncz dzialanie programu po zamknieciu okna
+    
     def quit(self):
         sys.exit(app.exec())
     #tworzenie obiektow okna admina
+   
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Kinco_Driver")
         MainWindow.resize(800, 600)
@@ -76,6 +83,16 @@ class Ui_MainWindow(object):
         self.pushButton_12 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_12.setGeometry(QtCore.QRect(630, 70, 130, 25))
         self.pushButton_12.setObjectName("pushButton_7") 
+        
+        
+        self.pushButton_13 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_13.setGeometry(QtCore.QRect(630, 100, 130, 25))
+        self.pushButton_13.setObjectName("pushButton_7") 
+        
+        
+        self.pushButton_14 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_14.setGeometry(QtCore.QRect(490, 100, 130, 25))
+        self.pushButton_14.setObjectName("pushButton_7") 
         
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(50, 140, 701, 100))
@@ -230,6 +247,11 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
     #callback przycisku send obsugujacy wysylanie wiadomosci do serwomechanizmow
+    
+
+        
+
+        
     def send_message(self):
 		#wczytaj wartosci nazwy rejestru, funkcji, jednostki, oraz 
 		#wysylanej wiadomosci podanych przez uzytkownika.
@@ -364,57 +386,108 @@ class Ui_MainWindow(object):
      
     def Test_clicked(self):
 		#wywolaj metode wykoujaca test
-        result=Admin_backend.moving.do_test()    
-        #wyswietl informacje czy test sie powiodl    
-        if(result!=0):
-            self.msgbox = QMessageBox()
-            self.msgbox.setIcon(QMessageBox.Critical)
-            self.msgbox.setText("Test Error")
-            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            self.msgbox.show()
+        Admin_backend.stop_thread=0
+        self.check_window()
+        self.testTask()      
+
+    def check_window(self):
+        global check_window	  	
+        check_window=Check_move_Window.Ui_Check_move_Window()
+        print(check_window)
+        self.ui = check_window
+        check_window.setupUi(self.ui)
+        check_window.show()
+        	
+    def moveTask(self):        
+        # Step 2: Create a QThread object
+        self.thread = QThread()
+        # Step 3: Create a worker object
+        self.moving = Admin_backend.moving()
+        # Step 4: Move worker to the thread
+        self.moving.moveToThread(self.thread)
+        # Step 5: Connect signals and slots
+        self.thread.started.connect(self.moving.do_move)
+        self.moving.finished.connect(self.thread.quit)
+        self.moving.finished.connect(self.moving.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.moving.progress2.connect(self.update_move_window)
+        self.moving.progress.connect(self.show_messagebox)
+        self.moving.progress3.connect(self.update_unit)
+        self.moving.stop_current_thread.connect(self.thread.quit)
+
+        # Step 6: Start the thread
+        self.thread.start()	
+        self.pushButton_6.setEnabled(False)
+        self.thread.finished.connect( lambda: self.pushButton_6.setEnabled(True))
+        self.pushButton_8.setEnabled(False)
+        self.thread.finished.connect(lambda: self.pushButton_8.setEnabled(True) )     
+        
+        	 
+        #funkcja odpowiedzialna za porusznie sie serwomechanizmow   		
+
+    def update_unit(self,unit):
+        print(unit)
+        self.current_unit=unit
+            
+    def testTask(self):
+        # Step 2: Create a QThread object
+        self.thread = QThread()
+        # Step 3: Create a worker object
+        self.moving = Admin_backend.moving()
+        # Step 4: Move worker to the thread
+        self.moving.moveToThread(self.thread)
+        # Step 5: Connect signals and slots
+        self.thread.started.connect(self.moving.do_test)
+        self.moving.finished.connect(self.thread.quit)
+        self.moving.finished.connect(self.moving.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.moving.progress2.connect(self.update_move_window)
+        self.moving.progress3.connect(self.update_unit)        
+        self.moving.progress.connect(self.show_messagebox2)
+        self.moving.stop_current_thread.connect(self.thread.quit)
+        
+        # Step 6: Start the thread
+        self.thread.start()	
+        self.pushButton_6.setEnabled(False)
+        self.thread.finished.connect(lambda: self.pushButton_6.setEnabled(True))
+        self.pushButton_8.setEnabled(False)
+        self.thread.finished.connect(lambda: self.pushButton_8.setEnabled(True))          
+        	 
+        #funkcja odpowiedzialna za porusznie sie serwomechanizmow 
+    def apimoveTask(self):
+        # Step 2: Create a QThread object
+        self.thread = QThread()
+        # Step 3: Create a worker object
+        self.moving = Admin_backend.moving()
+        # Step 4: Move worker to the thread
+        self.moving.moveToThread(self.thread)
+        # Step 5: Connect signals and slots
+        self.thread.started.connect(self.moving.do_test)
+        self.moving.finished.connect(self.thread.quit)
+        self.moving.finished.connect(self.moving.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)        
+        # Step 6: Start the thread
+        self.thread.start()	
+          
+    def update_move_window(self,point):
+        global check_window	
+        curr_text=""
+        if self.current_unit==1:
+            curr_text="x"
         else:
-            self.msgbox = QMessageBox()
-            self.msgbox.setIcon(QMessageBox.Information)            
-            self.msgbox.setText("Test completed succesful")
-            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            self.msgbox.show()
-			 
-    #funkcja odpowiedzialna za porusznie sie serwomechanizmow    		
-    def Move_clicked(self):
-        result=0
-        try:
-			#pobierz wartosci o ruchu podane przez uzytkownika i zapisz
-			#w odpowienich zmiennych klasy asmin_backend
-            Admin_backend.moving.position_x=int(self.coordination_box_x.toPlainText())
-            Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText()) 
-            Admin_backend.moving.zero=self.positioning_choice.currentText()                   
-        except Exception:
-            traceback.print_exc()
-            result=6   
-            #jesli aktualnie program nie namesession_ui wykonuje ruchu
-        if(Admin_backend.move_deafult_flag[0]==0):
-            try:
-				#zapisz wczytane uzytkownika informacje o ruchu 
-				#do odpowiednich zmienncyh klasy admin_backend
-                Admin_backend.moving.acceleration_x=round(163.84*int(self.acceleration_box_x.toPlainText()))
-                Admin_backend.moving.decceleration_x=round(163.84*int(self.decceleration_box_x.toPlainText()))
-                Admin_backend.moving.velocity_x=round(2730*int(self.velocity_box_x.toPlainText()))
-                Admin_backend.moving.acceleration_y=round(163.84*int(self.acceleration_box_y.toPlainText()))
-                Admin_backend.moving.decceleration_y=round(163.84*int(self.decceleration_box_y.toPlainText()))
-                Admin_backend.moving.velocity_y=round(2730*int(self.velocity_box_x.toPlainText()))
-                Admin_backend.moving.zero=self.positioning_choice.currentText()
-            except Exception:
-                traceback.print_exc()
-                result=6
-        #wyswietl informacje o statusie ruchu 
-        if(result!=6):               
-            result=Admin_backend.moving.do_move()
+            curr_text="y"    
+        uplabel=("current position of axis "+curr_text+" : "+str(point))
+        Check_move_Window.Ui_Check_move_Window.update_label(check_window,uplabel)
+           
+    def show_messagebox(self,result):
         self.msgbox = QMessageBox()
         self.msgbox.setIcon(QMessageBox.Critical)
+        global check_window
+        check_window.close()
         if(result==1):
             self.msgbox.setText("wrong type of message")
         elif(result==2):
-             self.msgbox.setText("one of value out of limit")
+            self.msgbox.setText("one of value out of limit")
         elif(result==3):
             self.msgbox.setText("one of value out of limit")
         elif(result==4):
@@ -428,7 +501,107 @@ class Ui_MainWindow(object):
             self.msgbox.setIcon(QMessageBox.Information)            
             self.msgbox.setText("Move completed succesful")
             self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        self.msgbox.show()
+        self.msgbox.show()  
+    
+    def show_messagebox2(self,result):
+        if(result!=0):
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)
+            self.msgbox.setText("Test Error")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+        else:
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Information)            
+            self.msgbox.setText("Test completed succesful")
+            self.msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            self.msgbox.show()
+            
+    def api_move(self,x,y,x_vel,y_vel,X_acc,y_acc,x_dec,y_dec,positioning,deafult):
+        result=0
+        try:
+			#pobierz wartosci o ruchu podane przez uzytkownika i zapisz
+			#w odpowienich zmiennych klasy asmin_backend
+            Admin_backend.moving.position_x=x
+            Admin_backend.moving.position_y=y 
+            Admin_backend.moving.zero=positioning                  
+        except Exception:
+            traceback.print_exc()
+            result=6
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)                 
+            self.msgbox.setText("Invalid input data")
+            self.msgbox.show() 
+            #jesli aktualnie program nie namesession_ui wykonuje ruchu
+        if(deafult==0):
+            try:
+				#zapisz wczytane uzytkownika informacje o ruchu 
+				#do odpowiednich zmienncyh klasy admin_backend
+                Admin_backend.moving.acceleration_x=round(163.84*int(self.acceleration_box_x.toPlainText()))
+                Admin_backend.moving.decceleration_x=round(163.84*int(self.decceleration_box_x.toPlainText()))
+                Admin_backend.moving.velocity_x=round(2730*int(self.velocity_box_x.toPlainText()))
+                Admin_backend.moving.acceleration_y=round(163.84*int(self.acceleration_box_y.toPlainText()))
+                Admin_backend.moving.decceleration_y=round(163.84*int(self.decceleration_box_y.toPlainText()))
+                Admin_backend.moving.velocity_y=round(2730*int(self.velocity_box_x.toPlainText()))
+                Admin_backend.moving.zero=self.positioning_choice.currentText()
+
+            except Exception:
+                traceback.print_exc()
+                result=6
+                self.msgbox = QMessageBox()
+                self.msgbox.setIcon(QMessageBox.Critical)                 
+                self.msgbox.setText("Invalid input data")
+                self.msgbox.show() 
+        else:
+            Admin_backend.move_deafult_flag[0]=1         
+        #wyswietl informacje o statusie ruchu 
+        if(result!=6):
+            Admin_backend.stop_thread=0 
+            self.check_window()             
+            self.apimoveTask()          
+            
+    def Move_clicked(self):
+        result=0
+        try:
+			#pobierz wartosci o ruchu podane przez uzytkownika i zapisz
+			#w odpowienich zmiennych klasy asmin_backend
+            Admin_backend.moving.position_x=int(self.coordination_box_x.toPlainText())
+            Admin_backend.moving.position_y=int(self.coordination_box_y.toPlainText()) 
+            Admin_backend.moving.zero=self.positioning_choice.currentText()                   
+        except Exception:
+            traceback.print_exc()
+            result=6
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)                 
+            self.msgbox.setText("Invalid input data")
+            self.msgbox.show() 
+            #jesli aktualnie program nie namesession_ui wykonuje ruchu
+        if(Admin_backend.move_deafult_flag[0]==0):
+            try:
+				#zapisz wczytane uzytkownika informacje o ruchu 
+				#do odpowiednich zmienncyh klasy admin_backend
+                Admin_backend.moving.acceleration_x=round(163.84*int(self.acceleration_box_x.toPlainText()))
+                Admin_backend.moving.decceleration_x=round(163.84*int(self.decceleration_box_x.toPlainText()))
+                Admin_backend.moving.velocity_x=round(2730*int(self.velocity_box_x.toPlainText()))
+                Admin_backend.moving.acceleration_y=round(163.84*int(self.acceleration_box_y.toPlainText()))
+                Admin_backend.moving.decceleration_y=round(163.84*int(self.decceleration_box_y.toPlainText()))
+                Admin_backend.moving.velocity_y=round(2730*int(self.velocity_box_x.toPlainText()))
+                Admin_backend.moving.zero=self.positioning_choice.currentText()
+
+            except Exception:
+                traceback.print_exc()
+                result=6
+                self.msgbox = QMessageBox()
+                self.msgbox.setIcon(QMessageBox.Critical)                 
+                self.msgbox.setText("Invalid input data")
+                self.msgbox.show() 
+         
+        #wyswietl informacje o statusie ruchu 
+        if(result!=6):
+            Admin_backend.stop_thread=0 
+            self.check_window()             
+            self.moveTask()           
+       
 
     #Callback checkboxu wylacza mozliwosc dodawania swoich wartosci do 
     #ruchu oprocz wspolrzednych    
@@ -494,9 +667,11 @@ class Ui_MainWindow(object):
         self.currentPosition_ui.setupUi(self.currentPosition_ui)
         self.currentPosition_ui.show()   
 
-
+    def motors_off_callback(self):  
+        Admin_backend.button_callbacks.motors_off() 
         
-			
+    def Zero_current_callback(self):  
+        Admin_backend.button_callbacks.Zero_current()	
 
     #funkcja uruchamiana przy starcie okna przypsiujaca wartosci oknu 
     #gui oraz deklarujaca callbacki
@@ -527,6 +702,10 @@ class Ui_MainWindow(object):
         self.pushButton_11.clicked.connect(self.error_reset_callback)
         self.pushButton_12.setText(_translate("MainWindow", "Session Movement"))
         self.pushButton_12.clicked.connect(self.session_movement_callback)
+        self.pushButton_13.setText(_translate("MainWindow", "motors off"))
+        self.pushButton_13.clicked.connect(self.motors_off_callback)
+        self.pushButton_14.setText(_translate("MainWindow", "Zero current point"))
+        self.pushButton_14.clicked.connect(self.Zero_current_callback)
         self.positioning_choice.addItems(Admin_backend.Positioning_values)
         self.deafult_checkbox.clicked.connect(self.deafult_checkbox_clicked)
         self.unit_choice.addItems(Constants.units)
@@ -538,8 +717,8 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Unit:"))
         self.label_2.setText(_translate("MainWindow", "Function:"))
         self.label_3.setText(_translate("MainWindow", self.getDate() ))
-        self.label_4.setText(_translate("MainWindow", "X Coordinate:"))
-        self.label_5.setText(_translate("MainWindow", "Y Coordinate:"))
+        self.label_4.setText(_translate("MainWindow", "Y Coordinate:"))
+        self.label_5.setText(_translate("MainWindow", "X Coordinate:"))
         self.label_6.setText(_translate("MainWindow", "Message:"))
         self.label_7.setText(_translate("MainWindow", "Register Name:"))
         self.label_9.setText(_translate("MainWindow", " "))
@@ -563,3 +742,4 @@ if __name__ == "__main__":
     MainWindow.show()
     sys.exit(app.exec_())
 
+   

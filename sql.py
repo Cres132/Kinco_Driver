@@ -36,7 +36,7 @@ class Adress:
     con = sqlite3.connect('Adress.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    #tworzenie tablicy informujacych o adresie resjestru metodzie odczytu i zapisu oraz krotkiej infermacji o porzeznaczeniu
+    #tworzenie tablicy informujacych o adresie resjestru metodzie odczytu i zapisu oraz krotkiej informacji o przeznaczeniu
     cur.execute("""
             CREATE TABLE IF NOT EXISTS Adress (
                 id INTEGER PRIMARY KEY ASC,
@@ -64,7 +64,7 @@ class Adress:
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Max_velocity', '0x4900','Maximum velocity range:0-x','1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_methods', '0x4D00','Homing methods range:0-x' ,'1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity', '0x5010','Velocity for searching limit switch range:0-x','2'))
-    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity_n', '0x5020','Velocity for searching phase-N signa range:0-x','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity_n', '0x5020','Velocity for searching phase-N signal range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_acceleration', '0x5200','Acceleration range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_offset', '0x4100','Home offset range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Error_code', '0x1F00','Current error code','1'))
@@ -317,7 +317,7 @@ class Adress:
    
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Machine_status', 'locked','0','0'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Operation_modes', 'locked','0','0'))
-    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','0','100000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','-50000','50000'))
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity_trap', 'int','0','136500'))#50RPM
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Accelaration', 'int','0','8193'))#50rps/s^2
     cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Decelaration', 'int','0','8193'))#50rps/s^2

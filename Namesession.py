@@ -64,7 +64,7 @@ class Ui_NameSession_Window(QWidget):
         self.pushButton_1.setText(_translate("Widget", "deafult"))
         self.pushButton_1.clicked.connect(self.deafult_callback)	  
 	      
-        self.pushButton_2.setText(_translate("MWidget", "Save name"))
+        self.pushButton_2.setText(_translate("Widget", "Save name"))
         self.pushButton_2.clicked.connect(self.save_name_callback)
        
 #funkcja startowa okna uzywana do testowania
