@@ -1,5 +1,5 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox
+from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWidget,QVBoxLayout,QLabel,QCheckBox,QTableWidget,QTableWidgetItem
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer,QObject, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -14,8 +14,10 @@ import Session_records
 import Current_position
 import Check_move_Window
 
+Table=[]
+Point_table=0
 check_window=0	
-
+table_end=0
 #klasa odpowiedzialna za tworzenia okna admina 
 class Ui_MainWindow(object):
 	#tworzenie zmienncyh tymczasowych
@@ -232,6 +234,17 @@ class Ui_MainWindow(object):
         self.vbox = QVBoxLayout()
         self.responded_messages2 = QWidget()
         self.vbox2 = QVBoxLayout()
+        self.table = QTableWidget(self.centralwidget)
+        self.table.setGeometry(QtCore.QRect(20, 330, 760, 100))
+        self.table.setColumnCount(3)
+        self.table.setRowCount(1000)
+        self.table.setColumnWidth(0,235)
+        self.table.setColumnWidth(1,235)
+        self.table.setColumnWidth(2,235)
+        self.table.setHorizontalHeaderLabels(['Position X','Position Y','name'])
+        self.table.resizeRowsToContents() 
+        self.table.setMinimumWidth(720)
+        self.table.setMinimumHeight(100)
         #podzielenie okna na czesc z menu i czesc z obiektami
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -246,7 +259,6 @@ class Ui_MainWindow(object):
         self.DigitalClock.setGeometry(QtCore.QRect(570, 553, 130, 21))
         self.retranslateUi(MainWindow) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-    #callback przycisku send obsugujacy wysylanie wiadomosci do serwomechanizmow
     
 
         
@@ -417,6 +429,8 @@ class Ui_MainWindow(object):
 
         # Step 6: Start the thread
         self.thread.start()	
+        self.pushButton_5.setEnabled(False)
+        self.thread.finished.connect( lambda: self.pushButton_5.setEnabled(True))
         self.pushButton_6.setEnabled(False)
         self.thread.finished.connect( lambda: self.pushButton_6.setEnabled(True))
         self.pushButton_8.setEnabled(False)
@@ -426,7 +440,6 @@ class Ui_MainWindow(object):
         #funkcja odpowiedzialna za porusznie sie serwomechanizmow   		
 
     def update_unit(self,unit):
-        print(unit)
         self.current_unit=unit
             
     def testTask(self):
@@ -448,6 +461,8 @@ class Ui_MainWindow(object):
         
         # Step 6: Start the thread
         self.thread.start()	
+        self.pushButton_5.setEnabled(False)
+        self.thread.finished.connect( lambda: self.pushButton_5.setEnabled(True))
         self.pushButton_6.setEnabled(False)
         self.thread.finished.connect(lambda: self.pushButton_6.setEnabled(True))
         self.pushButton_8.setEnabled(False)
@@ -626,34 +641,82 @@ class Ui_MainWindow(object):
 
         
     def savepoint_callback(self):
+        global table_end
+        global Table
         Admin_backend.button_callbacks.savepoint_button_callback()
-        object = QLabel('Unit1:'+str(Admin_backend.Position_save_info[0])+'     '+'Unit2:'+str(Admin_backend.Position_save_info[1]))
-        self.vbox2.addWidget(object)	
-        self.responded_messages2.setLayout(self.vbox2)			
-        self.scrollArea2.setWidget(self.responded_messages2)
-        
-
+        item1=QTableWidgetItem(str(Admin_backend.Position_save_info[0]))
+        item2=QTableWidgetItem(str(Admin_backend.Position_save_info[1]))
+        item3=QTableWidgetItem("Default name "+str(table_end))
+        self.table.setItem(table_end,0,item1)
+        self.table.setItem(table_end,1,item2)
+        self.table.setItem(table_end,2,item3)
+        self.table.selectRow(table_end)
+        table_end=table_end+1        
    
     def previous_callback(self):
         saved_coor=Admin_backend.button_callbacks.previous_buttton_callback()
         self.coordination_box_x.setText(str(saved_coor[0]))
         self.coordination_box_y.setText(str(saved_coor[1]))
-	
+        if(Admin_backend.current_point>-1):
+            self.table.selectRow(Admin_backend.current_point)	
     def next_callback(self):
         saved_coor=Admin_backend.button_callbacks.next_buttton_callback()
         self.coordination_box_x.setText(str(saved_coor[0]))
         self.coordination_box_y.setText(str(saved_coor[1]))
+        if(Admin_backend.current_point<1000):
+            self.table.selectRow(Admin_backend.current_point)	
 	
     def savesession_callback(self):
+        global Table
+        global table_end
+        Table=[[0 for x in range(self.table.columnCount())]for y in range(table_end)]
+        for i in range(self.table.columnCount()):			
+            for k in range(table_end):
+                print([k,i])
+                print(self.table.item(k,i).text())
+                Table[k][i]=self.table.item(k,i).text()
+        Admin_backend.Points=Table
         self.namesession_ui = Namesession.Ui_NameSession_Window()
         self.namesession_ui.setupUi(self.namesession_ui)
         self.namesession_ui.show()     		
         
         
-    def readsession_callback(self):
+    def readsession_callback(self):				
+        self.thread = QThread()
         self.readsession_ui = Session_records.Ui_Session_records_Window()
+        self.readsession_ui.moveToThread(self.thread)
         self.readsession_ui.setupUi(self.readsession_ui)
-        self.readsession_ui.show()     	
+        self.thread.started.connect(self.readsession_ui.show)
+        self.readsession_ui.finished.connect(self.update_table )
+        self.readsession_ui.finished.connect(self.thread.quit)
+        self.readsession_ui.finished.connect(self.readsession_ui.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
+        	
+
+
+        
+    def update_table(self):
+        try:
+            global table_end    
+            Points=Admin_backend.New_points
+            counter=0
+            print(Points)
+            self.table.clear()
+            Admin_backend.Saved_points=[]          
+            for point in Points:
+                Admin_backend.Saved_points.append([str(point[1]),str(point[2])]) 
+                Admin_backend.current_point=(len(Admin_backend.Saved_points))-1
+                item1=QTableWidgetItem(str(point[1]))
+                item2=QTableWidgetItem(str(point[2]))
+                item3=QTableWidgetItem(str(point[3]))
+                self.table.setItem(counter,0,item1)
+                self.table.setItem(counter,1,item2)
+                self.table.setItem(counter,2,item3)
+                counter=counter+1
+            table_end=counter
+        except Exception:
+            traceback.print_exc()        	
     
     def error_reset_callback(self):
         result=Admin_backend.button_callbacks.error_reset()

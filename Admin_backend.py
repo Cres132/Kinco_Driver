@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QComboBox,QStyleFactory,QMainWindow,QMessageBox ,QWi
 from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
 from timeit import default_timer as timer
+import Admin_ui
 
 #zmienne uzywane do sprawdzania poprawnosci wysylanych widomosci
 function_value = ''
@@ -50,6 +51,8 @@ current_point=0
 window1=0
 currentPosition_ui=0
 stop_thread=0
+New_points=0
+Points=[]
 #klasa odpopwiadajaca za komunikacje sie z serwomechanizmami
 class message_sending(Interpretation.interpretation):
     #okresla wartosc komunikacji po moodbusie dla funkcji
@@ -247,7 +250,7 @@ class message_sending(Interpretation.interpretation):
                 #jesli dlugosc wiadomosci pisana jest do rejestru o dlugosc
                 #rownej 2 komorkom pamieci rejestru dostosuj wartosci wysylane
                 #do rejetru i wyslij wiadomosc		
-                else:	
+                else:
 					#jesli wartosc wiadomosci nie przekracza wartosci 
 					#maksymalnej komorki pamieci						
                     if(int(message_temp)<65536):
@@ -458,8 +461,7 @@ class moving(QObject):
                 self.finished.emit()                   
                 return result   
         else:
-             print("error asd3")
-        
+             print("error asd3")        
         print("przetestowane",move_allowance)
         self.progress.emit(result)
         self.finished.emit()	
@@ -820,11 +822,12 @@ class button_callbacks:
                 id INTEGER PRIMARY KEY ASC,
                 xcoordinate  varchar(250)  NOT NULL,
                 ycoordinate varchar(250)  NOT NULL,
+                name varchar(250)  NOT NULL,
                 date date NOT NULL,
                 time varchar(250) NOT NULL
 
                 )""")
-        cur.execute('INSERT INTO tempsession VALUES(NULL,?, ?, ?, ?);', (str(Position_save_info[0]), str(Position_save_info[1]), nowt,timet))
+        cur.execute('INSERT INTO tempsession VALUES(NULL,?, ?, ?, ?, ?);', (str(Position_save_info[0]), str(Position_save_info[1]),"def",nowt,timet))
         con.commit()
         Interpretation.position_check=[0]           
     def previous_buttton_callback():
@@ -843,7 +846,37 @@ class button_callbacks:
      	    return Saved_points[current_point]
         else:
             return Saved_points[len(Saved_points)-1]	
-        
+    
+    def Read_Session_callback(session_name):
+        try:
+            global New_points
+            con = sqlite3.connect('Sessions.db')
+            con.row_factory = sqlite3.Row
+            cur = con.cursor()
+            cur.execute("""
+              CREATE TABLE IF NOT EXISTS tempsession (
+                id INTEGER PRIMARY KEY ASC,
+                xcoordinate  varchar(250)  NOT NULL,
+                ycoordinate varchar(250)  NOT NULL,
+                name varchar(250)  NOT NULL,
+                date date NOT NULL,
+                time varchar(250) NOT NULL
+
+                )""")
+            print(session_name)         
+            query='SELECT * FROM  %s'%session_name
+            cur.execute(query)
+            Points= cur.fetchall()
+            New_points=Points            
+            command="Delete from tempsession"   
+            cur.execute(command)
+            command="INSERT INTO tempsession SELECT * FROM %s"%session_name   
+            cur.execute(command)            
+            con.commit()      
+
+        except Exception:
+            traceback.print_exc()
+    
     def savesession_buttton_callback(title):
         time = QTime.currentTime()
         timet = time.toString('hh:mm:ss')
@@ -852,13 +885,33 @@ class button_callbacks:
         con = sqlite3.connect('Sessions.db')
         con.row_factory = sqlite3.Row
         cur = con.cursor()
+        time = QTime.currentTime()
+        timet = time.toString('hh:mm:ss')
+        now=QDate.currentDate()
+        nowt=now.toString('yyyy:MM:dd')
+        cur.execute("""
+              CREATE TABLE IF NOT EXISTS tempsession (
+                id INTEGER PRIMARY KEY ASC,
+                xcoordinate  varchar(250)  NOT NULL,
+                ycoordinate varchar(250)  NOT NULL,
+                name varchar(250)  NOT NULL,
+                date date NOT NULL,
+                time varchar(250) NOT NULL
+
+                )""")
+        command="Delete from tempsession"   
+        cur.execute(command)
+        print(len(Points))
+        print(Points)
+        for i in range(len(Points)):
+            print((Points[i][2]))
+            cur.execute('INSERT INTO tempsession VALUES(NULL,?, ?, ?, ?, ?);', (str(Points[i][0]), str(Points[i][1]),str(Points[i][2]),nowt,timet))
         if title==" ":
             title=("session"+nowt+"_"+timet)
         title=title.replace(":","_")            
         command="ALTER TABLE tempsession RENAME TO %s"%title    
-        print(command)
         cur.execute(command)
-        print(command)
+
     
     def motors_off():
         global unit_choice

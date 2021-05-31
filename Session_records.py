@@ -1,7 +1,7 @@
 from digitalclock import DigitalClock
 from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow,QWidget
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
+from PyQt5.QtCore import QDate, QTime,QObject, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 import Admin_backend
 import traceback
@@ -11,7 +11,9 @@ import SessionControl
 
 
 class Ui_Session_records_Window(QWidget):
-    session_name=" "	
+    session_name=" "
+    finished = pyqtSignal()
+    progress = pyqtSignal(int)	
     def quit(self):
         sys.exit(app.exec_())    
     
@@ -46,11 +48,8 @@ class Ui_Session_records_Window(QWidget):
 	#trzeba dodac wiecej zabezpieczen	
     def proceed_callback(self,MainWindow):
         try:
-            SessionControl.session_name=self.sessions.currentText()
-            self.ui = SessionControl.Ui_SessionControl_Window()
-            self.ui.setupUi(self.ui)
-            self.ui.show()  		
-        
+            Admin_backend.button_callbacks.Read_Session_callback(self.session_name)
+            self.finished.emit()       
             self.close()
         except Exception:
             traceback.print_exc()
@@ -75,7 +74,7 @@ class Ui_Session_records_Window(QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Choose session"))
 	    
-        self.label.setText(_translate("MainWindow", "Choose  session to Open"))
+        self.label.setText(_translate("MainWindow", "Choose session to open"))
         self.pushButton_1.setText(_translate("MainWindow", "Exit"))
         self.pushButton_1.clicked.connect(self.close)	  
 	      
