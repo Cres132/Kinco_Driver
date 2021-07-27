@@ -13,6 +13,8 @@ import Namesession
 import Session_records
 import Current_position
 import Check_move_Window
+import serwervxi
+import socket
 
 Table=[]
 Point_table=0
@@ -32,6 +34,7 @@ class Ui_MainWindow(object):
     #tworzenie obiektow okna admina
    
     def setupUi(self, MainWindow):
+        serwervxi.Listen_connection.listen()
         MainWindow.setObjectName("Kinco_Driver")
         MainWindow.resize(800, 600)
         MainWindow.setFixedSize(MainWindow.size())
@@ -39,19 +42,19 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(50, 450, 100, 60))
+        self.pushButton.setGeometry(QtCore.QRect(50, 475, 100, 60))
         self.pushButton.setObjectName("pushButton")
 
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(180, 450, 100, 60))
+        self.pushButton_2.setGeometry(QtCore.QRect(180, 475, 100, 60))
         self.pushButton_2.setObjectName("pushButton_2")
 
         self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(310, 450, 100, 60))
+        self.pushButton_3.setGeometry(QtCore.QRect(310, 475, 100, 60))
         self.pushButton_3.setObjectName("pushButton_3")
 
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(440, 450, 100, 60))
+        self.pushButton_4.setGeometry(QtCore.QRect(440, 475, 100, 60))
         self.pushButton_4.setObjectName("pushButton_4")
 
         self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
@@ -63,7 +66,7 @@ class Ui_MainWindow(object):
         self.pushButton_6.setObjectName("pushButton_5")
 
         self.pushButton_7 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_7.setGeometry(QtCore.QRect(570, 450, 100, 60))
+        self.pushButton_7.setGeometry(QtCore.QRect(570, 475, 100, 60))
         self.pushButton_7.setObjectName("pushButton_7")
 
         self.pushButton_8 = QtWidgets.QPushButton(self.centralwidget)
@@ -75,7 +78,7 @@ class Ui_MainWindow(object):
         self.pushButton_9.setObjectName("pushButton_7")        
         
         self.pushButton_10 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_10.setGeometry(QtCore.QRect(630, 5, 130, 25))
+        self.pushButton_10.setGeometry(QtCore.QRect(630, 440, 130, 25))
         self.pushButton_10.setObjectName("pushButton_7")   
         
         self.pushButton_11 = QtWidgets.QPushButton(self.centralwidget)
@@ -93,7 +96,7 @@ class Ui_MainWindow(object):
         
         
         self.pushButton_14 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_14.setGeometry(QtCore.QRect(490, 100, 130, 25))
+        self.pushButton_14.setGeometry(QtCore.QRect(630, 5, 130, 25))
         self.pushButton_14.setObjectName("pushButton_7") 
         
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
@@ -178,6 +181,9 @@ class Ui_MainWindow(object):
         
         self.label_16 = QtWidgets.QLabel(self.centralwidget)
         self.label_16.setGeometry(QtCore.QRect(10, 245, 80, 25))
+
+        self.label_17 = QtWidgets.QLabel(self.centralwidget)
+        self.label_17.setGeometry(QtCore.QRect(50, 530, 300, 60))
         
         self.deafult_checkbox = QtWidgets.QCheckBox(self.centralwidget)
         self.deafult_checkbox.move(70,250)
@@ -259,8 +265,6 @@ class Ui_MainWindow(object):
         self.DigitalClock.setGeometry(QtCore.QRect(570, 553, 130, 21))
         self.retranslateUi(MainWindow) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-    
-
         
 
         
@@ -462,7 +466,7 @@ class Ui_MainWindow(object):
         # Step 6: Start the thread
         self.thread.start()	
         self.pushButton_5.setEnabled(False)
-        self.thread.finished.connect( lambda: self.pushButton_5.setEnabled(True))
+        self.thread.finished.connect(lambda: self.pushButton_5.setEnabled(True))
         self.pushButton_6.setEnabled(False)
         self.thread.finished.connect(lambda: self.pushButton_6.setEnabled(True))
         self.pushButton_8.setEnabled(False)
@@ -588,7 +592,7 @@ class Ui_MainWindow(object):
             result=6
             self.msgbox = QMessageBox()
             self.msgbox.setIcon(QMessageBox.Critical)                 
-            self.msgbox.setText("Invalid input data")
+            self.msgbox.setText("resultInvalid input data")
             self.msgbox.show() 
             #jesli aktualnie program nie namesession_ui wykonuje ruchu
         if(Admin_backend.move_deafult_flag[0]==0):
@@ -659,6 +663,7 @@ class Ui_MainWindow(object):
         self.coordination_box_y.setText(str(saved_coor[1]))
         if(Admin_backend.current_point>-1):
             self.table.selectRow(Admin_backend.current_point)	
+            
     def next_callback(self):
         saved_coor=Admin_backend.button_callbacks.next_buttton_callback()
         self.coordination_box_x.setText(str(saved_coor[0]))
@@ -691,8 +696,7 @@ class Ui_MainWindow(object):
         self.readsession_ui.finished.connect(self.thread.quit)
         self.readsession_ui.finished.connect(self.readsession_ui.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
-        	
+        self.thread.start()      	
 
 
         
@@ -715,6 +719,7 @@ class Ui_MainWindow(object):
                 self.table.setItem(counter,2,item3)
                 counter=counter+1
             table_end=counter
+            Admin_backend.current_point=0
         except Exception:
             traceback.print_exc()        	
     
@@ -739,6 +744,13 @@ class Ui_MainWindow(object):
     #funkcja uruchamiana przy starcie okna przypsiujaca wartosci oknu 
     #gui oraz deklarujaca callbacki
     def retranslateUi(self, MainWindow):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8",80))
+            ip_adress=s.getsockname()[0]
+        except Exception:    
+            ip_adress="Check connection to switch"
+            
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Kinco Driver"))
         self.pushButton.setText(_translate("MainWindow", "Home"))
@@ -791,9 +803,10 @@ class Ui_MainWindow(object):
         self.label_14.setText(_translate("MainWindow", "Velocity(rpm):"))
         self.label_15.setText(_translate("MainWindow", "Zero:"))
         self.label_16.setText(_translate("MainWindow", "Deafult:"))
+        self.label_17.setText(_translate("MainWindow", "Current IP: %s"%(ip_adress)))
         self.DigitalClock.setStyleSheet('background-color: black',)
         self.Register_window()
-
+        
 
 if __name__ == "__main__":
     import sys

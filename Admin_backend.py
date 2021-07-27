@@ -15,6 +15,7 @@ from pymodbus.client.sync import ModbusSerialClient as modbusclient
 from pymodbus.constants import Defaults
 from timeit import default_timer as timer
 import Admin_ui
+import serwervxi
 
 #zmienne uzywane do sprawdzania poprawnosci wysylanych widomosci
 function_value = ''
@@ -182,6 +183,7 @@ class message_sending(Interpretation.interpretation):
                 Interpretation.Status_registers_status.append([hh.registers])         
             except Exception:
                 traceback.print_exc()
+                serwervxi.connection_error=1
                 Register_respond.append("connection error")
                 client.close()
                 return 1
@@ -268,17 +270,23 @@ class message_sending(Interpretation.interpretation):
                         rq = client.write_registers(address=temp_register_adress,values=message_multi_temp , unit=Unit[unit_choice])						
 
                 assert (rq.function_code < 0x80)                
-            except Exception:                
+            except Exception:
+                serwervxi.connection_error=1                
                 traceback.print_exc()
                 return 4
                 
             #jesli mozna odczytac wartosc z rejsetru odczytaj nowo wpisana wartosc
             if(Register_class=='RW'):
-                hh = client.read_holding_registers(address=temp_register_adress,count=int(count_r), unit=Unit[unit_choice])
-                assert (hh.function_code < 0x80)
-                Interpretation.Status_registers_message=['']
-                Interpretation.Status_registers.append([Register_name_temp])
-                Interpretation.Status_registers_status.append([hh.registers])
+                try:
+                    hh = client.read_holding_registers(address=temp_register_adress,count=int(count_r), unit=Unit[unit_choice])
+                    assert (hh.function_code < 0x80)
+                    Interpretation.Status_registers_message=['']
+                    Interpretation.Status_registers.append([Register_name_temp])
+                    Interpretation.Status_registers_status.append([hh.registers])
+                except Exception:
+                    serwervxi.connection_error=1                
+                    traceback.print_exc()
+                    return 4
             client.close()
         else:
              return send_allowance
@@ -381,7 +389,8 @@ class moving(QObject):
         acceleration_y=self.acceleration_y
         decceleration_y=self.decceleration_y
         velocity_y=self.velocity_y
-        zero=self.zero	
+        zero=self.zero
+        print(zero)	
         if(move_deafult_flag[0]==1):             
             acceleration_x=Constants.deafult_acceleration
             decceleration_x=Constants.deafult_decceleration
@@ -392,6 +401,7 @@ class moving(QObject):
             print(position_x,acceleration_y)
         #jesli serwomechanizm nie wykonuje ruchu wykonaj ruch najpierw
         #jednego serwomechanizmu nastepnie drugiego
+        self.zero=zero
         if(move_allowance[0]==0 ):
             result=self.do_single_move(position_x,acceleration_x,decceleration_x,velocity_x,0,zero)
             if(result==0):           
@@ -430,13 +440,15 @@ class moving(QObject):
         #test polega na wykonaniu ruchu nastepnie wroceniu na miejsce 
         #pierwotne przez serwomechanizmy
         iter1=0
-        while iter1<=100:
+        iter2=0        
+        iter1=0
+        while iter1<=20:
             iter1=iter1+1;
             print(iter1)
             if(move_allowance[0]==0):        
-                result=self.do_single_move("-50" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+                result=self.do_single_move("7400" ,acceleration_x,decceleration_x,velocity_x,0,zero)
                 if(result==0):  
-                    result2=self.execute_check(0,-50,zero)
+                    result2=self.execute_check(0,7400,zero)
                     if(result2!=0):
                         self.progress.emit(result2)
                         self.finished.emit()
@@ -448,20 +460,21 @@ class moving(QObject):
             else:
                 print("error asd")       
               
-        if(move_allowance[0]==0):        
-            result=self.do_single_move("5000" ,acceleration_x,decceleration_x,velocity_x,0,zero)
-            if(result==0):                  
-                result2=self.execute_check(0,5000,zero)
-                if(result2!=0):
-                    self.progress.emit(result2)
-                    self.finished.emit()					
-                    return result2 
+            if(move_allowance[0]==0):        
+                result=self.do_single_move("-7400" ,acceleration_x,decceleration_x,velocity_x,0,zero)
+                if(result==0):                  
+                    result2=self.execute_check(0,-7400,zero)
+                    if(result2!=0):
+                        self.progress.emit(result2)
+                        self.finished.emit()					
+                        return result2 
+                else:
+                    self.progress.emit(result)
+                    self.finished.emit()                   
+                    return result   
             else:
-                self.progress.emit(result)
-                self.finished.emit()                   
-                return result   
-        else:
-             print("error asd3")        
+                print("error asd3")
+                                  
         print("przetestowane",move_allowance)
         self.progress.emit(result)
         self.finished.emit()	
@@ -488,6 +501,7 @@ class moving(QObject):
             message_sending.Unit=str(Unit)
             message_sending.read_register() 
             start_position=Interpretation.position_check[0] 
+
             #ustaw serwomechanizm stan operacyjny pozycjonowania
             message_sending.Register="Operation_modes"
             message_sending.Unit=str(unit) 
@@ -508,6 +522,7 @@ class moving(QObject):
                 self.finished.emit()				
                 return result        
             #okresl pozycje docelowa   
+            print(["aAa",str(target)])
             message_sending.Register="Target_position"
             message_sending.Unit=str(unit) 
             message_sending.message=str(target)
@@ -597,7 +612,7 @@ class moving(QObject):
                     self.progress.emit(result)
                     self.finished.emit()					
                     return result
-            #ppodnies flage wykonywania ruchu
+            #podnies flage wykonywania ruchu
             move_allowance[0]=1
             self.progress3.emit(unit)
             if unit!=1:                				
@@ -646,8 +661,6 @@ class moving(QObject):
             iter3=0			     
 			#pobierz wartosc startowa i stworz zmienne tymczasowe
             global start_position
-            
-            currentposition=0
             check_moving=[0]
             positions_list=[]
             Interpretation.position_check=[0]
@@ -739,7 +752,7 @@ class moving(QObject):
                         return 5
                 #jesli uklad wykonuje ruch przez ponad 15 sekund program przerywa ruch i 
                 #wyrzuca blad mozna usunac jeesli bedzie zbedne    
-                elif(len(positions_list)>5000):				
+                elif(len(positions_list)>50000):				
                     message_sending.Register="Machine_status"
                     message_sending.Unit=str(Unit) 
                     message_sending.message="0x06"   
@@ -783,6 +796,7 @@ class button_callbacks:
             message_sending.Register="Sim_dig_in"
             message_sending.Unit=1
             message_sending.message="0"   
+
             result=message_sending.write_register()        
             if result!=0:
                 print(result)
@@ -928,17 +942,23 @@ class button_callbacks:
     def Zero_current():
         global unit_choice
         global Unit
+        global move_deafult_flag
         iter1=0
         for a in Unit:
             print(iter1)
             unit_choice=iter1
             
+            message_sending.Register="Target_position"
+            message_sending.message=str(0)
+            result=message_sending.write_register()
+            if(result!=0):
+               return result   
+                        
             message_sending.Register="Homing_acceleration"
             message_sending.message="10"
             result=message_sending.write_register()
             if(result!=0):
-               return result          
-            
+               return result                      
             
             message_sending.Register="Homing_velocity"
             message_sending.message="10"
@@ -970,10 +990,53 @@ class button_callbacks:
             message_sending.message="0"   
             result=message_sending.write_register()        
             if result!=0:
-                return result   
-            
+                return result         
       
             if result!=0:
                 return result  
             iter1=iter1+1;
-     
+            
+    def current_position_check():		 
+        global unit_choice
+        global Unit
+        positions=[]
+        i=0
+        for a in Unit:
+           unit_choice=i
+           message_sending.Register="Position"
+           message_sending.Unit=i
+           result=message_sending.read_register() 
+           positions.append(Interpretation.position_check[0])
+           i=i+1
+        return positions  
+              
+    def current_error_check():		 
+        global unit_choice
+        global Unit
+        global Register_respond
+        error_codes=[]
+        i=0
+        for a in Unit:
+           unit_choice=i
+           message_sending.Register="Error_code"
+           message_sending.Unit=i
+           result=message_sending.read_register() 
+           error_codes.append(Interpretation.Status_registers_message[0])
+           Register_respond=[]
+           i=i+1
+        return error_codes    
+      
+    def current_drive_status_check():		 
+        global unit_choice
+        global Unit
+        global Register_respond
+        status_codes=[]
+        i=0
+        for a in Unit:
+           unit_choice=i
+           message_sending.Register="Drive_status"
+           message_sending.Unit=i
+           result=message_sending.read_register() 
+           status_codes.append(Interpretation.Status_registers_message[0])
+           i=i+1
+        return status_codes         

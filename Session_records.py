@@ -62,7 +62,6 @@ class Ui_Session_records_Window(QWidget):
         tables=con.execute('SELECT name FROM sqlite_master where type="table"')    
         for name in tables:
             tables_names.append(name[0])
-        print(tables_names)
         self.sessions.addItems(tables_names)
         con.commit()
         

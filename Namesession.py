@@ -1,10 +1,11 @@
 from digitalclock import DigitalClock
-from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow,QWidget
+from PyQt5.QtWidgets import QComboBox, QStyleFactory, QMainWindow,QWidget,QMessageBox 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt, QTimer
 from PyQt5.QtGui import QFont
 import Admin_backend
 import traceback
+import sqlite3
 
 class Ui_NameSession_Window(QWidget):
     session_name=" "	
@@ -45,15 +46,28 @@ class Ui_NameSession_Window(QWidget):
  	
     def save_name_callback(self,event):
         try:       
-            print(event)
+            tables_names=[]
+            con = sqlite3.connect('Sessions.db')
+            con.row_factory = sqlite3.Row
+            cur = con.cursor() 
+            tables=con.execute('SELECT name FROM sqlite_master where type="table"')    
+            for name in tables:
+                tables_names.append(name[0])    
             session_name=self.session_name_box.toPlainText()
-            Admin_backend.button_callbacks.savesession_buttton_callback(session_name)  
-            self.close()
-
+            if session_name in tables_names:
+                self.msgbox = QMessageBox()
+                self.msgbox.setIcon(QMessageBox.Critical)                 
+                self.msgbox.setText("Name already in database")
+                self.msgbox.show()
+            else: 
+                Admin_backend.button_callbacks.savesession_buttton_callback(session_name)  
+                self.close()
         except Exception:
-            session_name=" "
-            Admin_backend.button_callbacks.savesession_buttton_callback(session_name) 
-            self.close()
+            traceback.print_exc()
+            self.msgbox = QMessageBox()
+            self.msgbox.setIcon(QMessageBox.Critical)                 
+            self.msgbox.setText("Incorrect name")
+            self.msgbox.show()
 			
     def retranslateUi(self, Widget):		
         _translate = QtCore.QCoreApplication.translate
