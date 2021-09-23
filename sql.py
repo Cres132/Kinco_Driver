@@ -1,12 +1,16 @@
 import sqlite3
+import os
+#klasy odpowiedzialne za tworzenie baz danych uzywanych w programie
+#klasa odpowiedzialna za dane logowania
 class check:
+    try:
+        os.remove('users.db')
+    except Exception:
+        print("brak pliku")
     con = sqlite3.connect('users.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS users;")
-
-
-
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY ASC,
@@ -23,11 +27,16 @@ class check:
         users = check.cur.fetchall()
 
 
-
+#klasa odpowiedzialna za informacje o rejestrach serwomechanizmow
 class Adress:
+    try:
+        os.remove('Adress.db')
+    except Exception:
+        print("brak pliku")
     con = sqlite3.connect('Adress.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
+    #tworzenie tablicy informujacych o adresie resjestru metodzie odczytu i zapisu oraz krotkiej informacji o przeznaczeniu
     cur.execute("""
             CREATE TABLE IF NOT EXISTS Adress (
                 id INTEGER PRIMARY KEY ASC,
@@ -38,7 +47,7 @@ class Adress:
                 count varchar(250) NOT NULL
                 )""")
    
-    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?,?);', ('RW', 'Machine_status', '0x3100','Use control word to change status of drive =>machine state','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Machine_status', '0x3100','Use control word to change status of drive =>machine state','1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Drive_status', '0x3200','Status byte shows the status of drive','1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('WO', 'Operation_modes', '0x3500','Allow to switch operation mode','1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Position', '0x3700','Actual position value','2'))
@@ -55,13 +64,52 @@ class Adress:
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Max_velocity', '0x4900','Maximum velocity range:0-x','1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_methods', '0x4D00','Homing methods range:0-x' ,'1'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity', '0x5010','Velocity for searching limit switch range:0-x','2'))
-    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity_n', '0x5020','Velocity for searching phase-N signa range:0-x','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_velocity_n', '0x5020','Velocity for searching phase-N signal range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_acceleration', '0x5200','Acceleration range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Homing_offset', '0x4100','Home offset range:0-x','2'))
     cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Error_code', '0x1F00','Current error code','1'))
-    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('', '', '','',''))
-
-
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Max_fol_err', '0x3800','Maximum following error generates alarm','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pos_reach_window', '0x3900','Position range for "target rached"','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Soft_pos_limit', '0x4410','Soft positive limit','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Soft_neg_limit', '0x4420','Soft negative limit','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Vel_loop_gain_prop', '0x6310','Proportional gain of velocity 50-soft 200-hard','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Vel_loop_gain_int', '0x6320','Integral gain of velocity','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Speed_filter', '0x6350','Speed feedback filter','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pos_loop_val_prop', '0x6810','Proportional value of position loop','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Loop_velocity', '0x6820','Loop velocity feedworward','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Loop_acceleration', '0x6830','Loop acceleration feedworward','1'))         
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Smooth_filter', '0x6850','Loop smooth filter','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'EGR_numerator', '0x1910','Numerator of electric gain ratio','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'EGR_Denominator', '0x1920','Denominator of electric gain ratio','1'))  
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pulse_mode_control', '0x1930','Pulse mode control','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Input_pulse', '0x1940','Input pulse amount before EG','2'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Exec_pulse', '0x1950','Execute pulse after EG','2')) 
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pulse_filter', '0x1960','Filter for pulse input','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pulse_speed_m', '0x19C0','Pulse speed of master','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Pulse_speed_s', '0x19D0','Pulse speed of slave','1'))         
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Storage_control_param', '0x2910','storage control parameters','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Save_motor_pram', '0x2930','1 Save motor parametrs','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in1', '0x0830','fuction definition of digital input 1','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in2', '0x0840','fuction definition of digital input 2','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in3', '0x0850','fuction definition of digital input 3','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in4', '0x0860','fuction definition of digital input 4','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in5', '0x0870','fuction definition of digital input 5','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in6', '0x0880','fuction definition of digital input 6','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in7', '0x0890','fuction definition of digital input 7','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_in8', '0x09D0','fuction definition of digital input 8','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out1', '0x08F0','fuction definition of digital output 1','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out2', '0x0900','fuction definition of digital output2','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out3', '0x0910','fuction definition of digital output 3','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out4', '0x0920','fuction definition of digital output 4','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out5', '0x0930','fuction definition of digital output 5','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out6', '0x09E0','fuction definition of digital output 6','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Fun_dig_out7', '0x09F0','fuction definition of digital output 7','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Status_dig_in', '0x08A0','status of digital input','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RO', 'Status_dig_out', '0x0940','status of digital output','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'POL_DIG_IN', '0x0810','polarity of digital input','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'POL_DIG_OUT', '0x08D0','polarity of digital output','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Sim_dig_in', '0x0820','simulation of digital input','1'))
+    cur.execute('INSERT INTO Adress VALUES(NULL,?, ?, ?, ?, ?);', ('RW', 'Sim_dig_out', '0x08E0','simulation of digital output','1'))    
     cur.execute("""
             CREATE TABLE IF NOT EXISTS Adress_multi (
                 id INTEGER PRIMARY KEY ASC,
@@ -85,6 +133,8 @@ class Adress:
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL5', '0x0D50', 'Multiple speed control5 '))
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL6', '0x0D60', 'Multiple speed control6 '))
     cur.execute('INSERT INTO Adress_multi VALUES(NULL,?, ?, ?, ?);', ('RW', 'SPEED_CONTROL7', '0x0D70', 'Multiple speed control7 '))
+    #tworzenie tablicy informujacych dostepnych funkcjach resjestrow 
+    #oraz jednostkkach w ktorych sa podawane
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS functions (
                     id INTEGER PRIMARY KEY ASC,
@@ -94,11 +144,13 @@ class Adress:
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x06', 'Motor power off'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x0F', 'Motor power on'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x0B', 'Quick stop, load tops-voltage switched off'))
-    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x2F-3F', 'Start absolute positioning immediately'))
-    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x4F-5F', 'Start relative positioning immediately'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x01F', 'Start homing'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x2F', 'Start absolute positioning immediately'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x3F', 'Start absolute positioning immediately'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x4F', 'Start absolute positioning immediately'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x5F', 'Start relative positioning immediately'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x103F', 'Start absolute positioning while target position changes.'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x105F', 'Start relative positioning while target position changes'))
-    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x0F-1F', 'Start homing'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0X80', 'Clear internal error'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Machine_status', '0x06', 'Motor power off'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Operation_modes', '1', 'Positioning with position loop'))
@@ -120,11 +172,35 @@ class Adress:
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Homing_velocity_n', 'RPM','Velocity for searching phase-N signal range:0-x '))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Homing_acceleration', 'rp/s^2','Acceleration range:0-x'))
     cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Homing_offset', 'inc','Home offset range:0-x'))
-
-
-
-
-
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Max_fol_err', 'inc','Maximum following error generates alarm range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pos_reach_window', 'inc','Position range for "target rached" range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Soft_pos_limit', 'inc','Soft positive limit range:0-x' ))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Soft_neg_limit', 'inc','Soft negative limit'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Vel_loop_gain_prop', 'inc','Proportional gain of velocity 50-soft 200-hard range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Vel_loop_gain_int', 'number','Integral gain of velocity range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Speed_filter', 'number','Speed feedback filter range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pos_loop_val_prop', 'number','Proportional value of position loop range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Loop_velocity', 'number','Loop velocity feedworward range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Loop_acceleration', 'number','Loop acceleration feedworward range:0-x'))         
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Smooth_filter', 'number','Loop smooth filter range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('EGR_numerator', 'number','Numerator of electric gain ratio range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('EGR_Denominator', 'number','Denominator of electric gain ratio range:0-x'))  
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '0','CW/CCW'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '1','Pulse/direction'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '2','Incremental encoder'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '10','CW/CCW ,Rs 422 type'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '11','pulse/direction ,Rs 422 type'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', '12','incremental encoder ,Rs 422 type'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Input_pulse', 'inc','Input pulse amount before EG range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Exec_pulse', 'inc','Execute pulse after EG range:0-x')) 
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_filter', 'number','Filter for pulse input range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_speed_m', 'number','Pulse speed of master range:0-x'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Pulse_speed_s', 'number','Pulse speed of slave range:0-x'))         
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Storage_control_param', '1','Save all parameters '))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Storage_control_param', '10','Initalize all param'))
+    cur.execute('INSERT INTO functions VALUES(NULL,?, ?, ?);', ('Save_motor_pram', '1','1 Save motor parametrs '))
+    #tworzenie tablicy informujacych o metodzie interpretacji podanych 
+    #przez uzytkownika funkcji
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS interpretation (
                     id INTEGER PRIMARY KEY ASC,
@@ -162,7 +238,7 @@ class Adress:
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Target_velocity', 'RPM','Target velocity in mode 3, -3, or 4'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Target_current', 'Amp','Target current'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Max_current', 'Amp','Maximum current'))
-    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Max_velocity', 'RPM','Maximum velocity'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Max_velocity', 'number','Maximum velocity'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Homing_methods', 'number','Homing methods'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Homing_velocity', 'RPM','Velocity for searching limit switch'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Homing_velocity_n', 'RPM','Velocity for searching phase-N signa'))
@@ -184,11 +260,118 @@ class Adress:
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Error_code', '0x1000','Reservd'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Error_code', '0x2000','commutation'))
     cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Error_code', '0x4000','eeprom'))
-    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Error_code', '0x8000',''))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Error_code', '0x8000',''))    
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Max_fol_err', 'inc','Maximum following error generates alarm'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pos_reach_window', 'inc','Position range for "target rached"'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Soft_pos_limit', 'inc','Soft positive limit'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Soft_neg_limit', 'inc','Soft negative limit'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Vel_loop_gain_prop', 'inc/s','Proportional gain of velocity 50-soft 200-hard'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Vel_loop_gain_int', 'number','Integral gain of velocity'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Speed_filter', 'number','Speed feedback filter'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pos_loop_val_prop', 'number','Proportional value of position loop'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Loop_velocity', 'number','Loop velocity feedworward'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Loop_acceleration', 'number','Loop acceleration feedworward'))         
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Smooth_filter', 'number','Loop smooth filter'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('EGR_numerator', 'number','Numerator of electric gain ratio'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('EGR_Denominator', 'number','Denominator of electric gain ratio'))  
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pulse_mode_control', 'number','Pulse mode control'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Input_pulse', 'inc','Input pulse amount before EG'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Exec_pulse', 'inc','Execute pulse after EG')) 
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pulse_filter', 'number','Filter for pulse input'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pulse_speed_m', 'pulse/mS','Pulse speed of master'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Pulse_speed_s', 'pulse/mS','Pulse speed of slave'))         
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Storage_control_param', 'number','1 Save all parameters ,10 initalize all param'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ('Save_motor_pram', 'number','1 Save motor parametrs'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in1', 'number','fuction definition of digital input 1'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in2', 'number','fuction definition of digital input 2'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in3', 'number','fuction definition of digital input 3'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in4', 'number','fuction definition of digital input 4'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in5', 'number','fuction definition of digital input 5'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in6', 'number','fuction definition of digital input 6'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in7', 'number','fuction definition of digital input 7'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_in8', 'number','fuction definition of digital input 8'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out1', 'number','fuction definition of digital output 1'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out2', 'number','fuction definition of digital output2'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out3', 'number','fuction definition of digital output 3'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out4', 'number','fuction definition of digital output 4'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out5', 'number','fuction definition of digital output 5'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out6', 'number','fuction definition of digital output 6'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Fun_dig_out7', 'number','fuction definition of digital output 7'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Status_dig_in', 'number','status of digital input'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Status_dig_out', 'number','status of digital output'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'POL_DIG_IN', 'number','polarity of digital input'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'POL_DIG_OUT', 'number','polarity of digital output'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Sim_dig_in', 'number','simulation of digital input'))
+    cur.execute('INSERT INTO interpretation VALUES(NULL,?, ?, ?);', ( 'Sim_dig_out', 'number','simulation of digital output'))
     con.commit()
 
 
 
+    cur.execute("""
+            CREATE TABLE IF NOT EXISTS Limits (
+                id INTEGER PRIMARY KEY ASC,
+                name varchar(250) NOT NULL,
+                type varchar(250) NOT NULL,
+                min varchar(250) NOT NULL,
+                max varchar(250) NOT NULL)""")
+   
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Machine_status', 'locked','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Operation_modes', 'locked','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_position', 'int','-50000','50000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity_trap', 'int','0','136500'))#50RPM
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Accelaration', 'int','0','8193'))#50rps/s^2
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_Decelaration', 'int','0','8193'))#50rps/s^2
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_velocity', 'int','0','136500'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Target_current', 'int','0','100'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_current', 'int','0','1000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_velocity', 'int','0','100'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_methods', 'int','0' ,'35'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity', 'int','0','136500'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_velocity_n', 'int','0','136500'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_acceleration', 'int','0','8193'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Homing_offset', 'int','0','100000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Max_fol_err', 'int','0','100000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pos_reach_window', 'int','0','1000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Soft_pos_limit', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Soft_neg_limit', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Vel_loop_gain_prop', 'int','0','100'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Vel_loop_gain_int', 'int','0','3'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Speed_filter', 'int','0','1000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pos_loop_val_prop', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Loop_velocity', 'int','0','1000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Loop_acceleration', 'int','0','1000'))         
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Smooth_filter', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('EGR_numerator', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('EGR_Denominator', 'int','0','0'))  
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_mode_control', 'locked','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Input_pulse', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Exec_pulse', 'int','0','0')) 
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_filter', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_speed_m', 'int','0','0'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Pulse_speed_s', 'int','0','0'))         
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Storage_control_param', 'locked','0','10'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ('Save_motor_pram', 'locked','0','11'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in1',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in2', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in3',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in4',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in5',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in6', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_in7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out1',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out2',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out3',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out4',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out5',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out6',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Fun_dig_out7',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_IN',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'POL_DIG_OUT',  'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_in', 'int','0','10000'))
+    cur.execute('INSERT INTO Limits VALUES(NULL,?, ?, ?, ?);', ( 'Sim_dig_out',  'int','0','10000'))
+    con.commit()
+#funkcja tymaczasowa sprawdzajaca poprawnosc zapisanych danych 
 def czytajdane():
     Adress.cur.execute(""" SELECT id,name,function,description FROM functions """)
     func = Adress.cur.fetchall()
